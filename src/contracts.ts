@@ -3,7 +3,7 @@ import {
   Chain,
   HttpTransport,
   PrivateKeyAccount,
-  PublicActions,
+  PublicClient,
   WalletClient,
   getContract,
 } from "viem";
@@ -16,8 +16,7 @@ import {
 
 export const safeContract = (
   address: Address,
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+  client: PublicClient<HttpTransport, Chain>
 ) => {
   return getContract({
     address,
@@ -28,8 +27,18 @@ export const safeContract = (
 
 export const azoriusContract = (
   address: Address,
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+  client: PublicClient<HttpTransport, Chain>
+) => {
+  return getContract({
+    address,
+    abi: AzoriusAbi,
+    client,
+  });
+};
+
+export const azoriusContractWriteable = (
+  address: Address,
+  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount>
 ) => {
   return getContract({
     address,
@@ -40,8 +49,7 @@ export const azoriusContract = (
 
 export const ensNameWrapperContract = (
   address: Address,
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+  client: PublicClient<HttpTransport, Chain>
 ) => {
   return getContract({
     address,
@@ -52,8 +60,7 @@ export const ensNameWrapperContract = (
 
 export const linearVotingContract = (
   address: Address,
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+  client: PublicClient<HttpTransport, Chain>
 ) => {
   return getContract({
     address,

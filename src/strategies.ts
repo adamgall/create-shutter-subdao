@@ -3,9 +3,7 @@ import {
   Chain,
   GetContractReturnType,
   HttpTransport,
-  PrivateKeyAccount,
-  PublicActions,
-  WalletClient,
+  PublicClient,
   pad,
 } from "viem";
 import { AzoriusAbi, LinearERC20VotingStrategyAbi } from "./abis";
@@ -14,8 +12,7 @@ import { linearVotingContract } from "./contracts";
 export const getAllStrategiesOnAzorius = async (
   azorius: GetContractReturnType<
     typeof AzoriusAbi,
-    WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-      PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+    PublicClient<HttpTransport, Chain>
   >,
   start?: Address
 ): Promise<`0x${string}`[]> => {
@@ -40,8 +37,7 @@ export const getAllStrategiesOnAzorius = async (
 };
 
 export const findVotingStrategy = async (
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>,
+  client: PublicClient<HttpTransport, Chain>,
   allStrategies: Address[]
 ) => {
   for (const strategy of allStrategies) {

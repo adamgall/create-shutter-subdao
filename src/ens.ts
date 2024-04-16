@@ -2,9 +2,7 @@ import {
   Address,
   Chain,
   HttpTransport,
-  PrivateKeyAccount,
-  PublicActions,
-  WalletClient,
+  PublicClient,
   encodeFunctionData,
   namehash,
 } from "viem";
@@ -13,8 +11,7 @@ import { ensNameWrapperContract } from "./contracts";
 export const ensOwner = async (
   name: string,
   nameWrapperAddress: Address,
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+  client: PublicClient<HttpTransport, Chain>
 ) => {
   const node = namehash(name);
   const nameWrapper = ensNameWrapperContract(nameWrapperAddress, client);

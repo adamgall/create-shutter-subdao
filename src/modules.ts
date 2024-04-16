@@ -3,9 +3,7 @@ import {
   Chain,
   GetContractReturnType,
   HttpTransport,
-  PrivateKeyAccount,
-  PublicActions,
-  WalletClient,
+  PublicClient,
   pad,
 } from "viem";
 import { AzoriusAbi, GnosisSafeL2Abi } from "./abis";
@@ -14,8 +12,7 @@ import { azoriusContract } from "./contracts";
 export const getAllModulesOnSafe = async (
   safe: GetContractReturnType<
     typeof GnosisSafeL2Abi,
-    WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-      PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+    PublicClient<HttpTransport, Chain>
   >,
   start?: Address
 ): Promise<`0x${string}`[]> => {
@@ -40,8 +37,7 @@ export const getAllModulesOnSafe = async (
 };
 
 export const findAzoriusModule = async (
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
-    PublicActions<HttpTransport, Chain, PrivateKeyAccount>,
+  client: PublicClient<HttpTransport, Chain>,
   allModules: Address[]
 ) => {
   for (const module of allModules) {

@@ -1,17 +1,17 @@
-import { safeContract } from "./contracts";
+import { azoriusContractWriteable, safeContract } from "./contracts";
 import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
 import { getConfig } from "./config";
-import { getWalletClient } from "./clients";
+import { getPublicClient, getWalletClient } from "./clients";
 import { createEnsTransaction, ensOwner } from "./ens";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 
 (async () => {
   const config = getConfig();
-  const walletClient = getWalletClient(config.signingKey, config.chain);
+  const publicClient = getPublicClient(config.chain);
 
   console.log(`Using chain: ${config.chain.name}.`);
 
-  const parentSafe = safeContract(config.parentSafeAddress, walletClient);
+  const parentSafe = safeContract(config.parentSafeAddress, publicClient);
   console.log(`Using parent Safe address: ${config.parentSafeAddress}.`);
 
   console.log(`Using ENS name: ${config.ensName}.`);
@@ -20,7 +20,7 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   const ensOwnerAddress = await ensOwner(
     config.ensName,
     config.ensNameWrapperAddress,
-    walletClient
+    publicClient
   );
   if (config.parentSafeAddress !== ensOwnerAddress) {
     console.error("ENS name not owned by parent Safe address!");
@@ -35,7 +35,7 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   console.log(`All modules on Safe: ${allModuleAddresses.join(", ")}.`);
 
   const azoriusModule = await findAzoriusModule(
-    walletClient,
+    publicClient,
     allModuleAddresses
   );
 
@@ -59,7 +59,7 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   );
 
   const linearVotingStrategy = await findVotingStrategy(
-    walletClient,
+    publicClient,
     allAzoriusStrategyAddresses
   );
 
@@ -76,8 +76,14 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   console.log("");
 
   if (config.dryRun === false) {
+    const walletClient = getWalletClient(config.signingKey, config.chain);
+    const azoriusModuleWriteable = azoriusContractWriteable(
+      azoriusModule.address,
+      walletClient
+    );
+
     console.log("Submitting proposal...");
-    const proposal = await azoriusModule.write.submitProposal([
+    const proposal = await azoriusModuleWriteable.write.submitProposal([
       linearVotingStrategy.address,
       "0x",
       [
