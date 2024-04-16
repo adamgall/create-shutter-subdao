@@ -7,7 +7,7 @@ import {
   WalletClient,
   getContract,
 } from "viem";
-import { GnosisSafeL2Abi, AzoriusAbi } from "./abis";
+import { GnosisSafeL2Abi, AzoriusAbi, EnsNameWrapperAbi } from "./abis";
 
 export const safeContract = (
   address: Address,
@@ -29,6 +29,18 @@ export const azoriusContract = (
   return getContract({
     address,
     abi: AzoriusAbi,
+    client,
+  });
+};
+
+export const ensNameWrapperContract = (
+  address: Address,
+  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount> &
+    PublicActions<HttpTransport, Chain, PrivateKeyAccount>
+) => {
+  return getContract({
+    address,
+    abi: EnsNameWrapperAbi,
     client,
   });
 };
