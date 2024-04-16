@@ -75,18 +75,20 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   );
   console.log("");
 
-  console.log("Submitting proposal...");
-  const proposal = await azoriusModule.write.submitProposal([
-    linearVotingStrategy.address,
-    "0x",
-    [
-      createEnsTransaction(
-        config.ensPublicResolverAddress,
-        config.ensName,
-        config.ensIpfsHash
-      ),
-    ],
-    '{"title":"Testing two transactions","description":"Remove all text records"}',
-  ]);
-  console.log(`Proposal submitted at ${proposal}`);
+  if (config.dryRun === false) {
+    console.log("Submitting proposal...");
+    const proposal = await azoriusModule.write.submitProposal([
+      linearVotingStrategy.address,
+      "0x",
+      [
+        createEnsTransaction(
+          config.ensPublicResolverAddress,
+          config.ensName,
+          config.ensIpfsHash
+        ),
+      ],
+      '{"title":"Testing two transactions","description":"Remove all text records"}',
+    ]);
+    console.log(`Proposal submitted at ${proposal}`);
+  }
 })();

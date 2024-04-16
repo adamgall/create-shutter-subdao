@@ -3,6 +3,25 @@ import { getAddress, isHex } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 
 export const getConfig = () => {
+  if (process.env.DRY_RUN === undefined) {
+    console.error("DRY_RUN environment variable is missing!");
+    process.exit(1);
+  }
+
+  const dryRun =
+    process.env.DRY_RUN === "true"
+      ? true
+      : process.env.DRY_RUN === "false"
+      ? false
+      : undefined;
+
+  if (dryRun === undefined) {
+    console.error(
+      'DRY_RUN environment variable is malformed! Should be set to "true" or "false".'
+    );
+    process.exit(1);
+  }
+
   if (process.env.SIGNING_KEY === undefined) {
     console.error("SIGNING_KEY environment variable is missing!");
     process.exit(1);
@@ -12,6 +31,8 @@ export const getConfig = () => {
     console.error("SIGNING_KEY environment variable is malformed!");
     process.exit(1);
   }
+
+  const signingKey = process.env.SIGNING_KEY;
 
   if (process.env.PARENT_SAFE_ADDRESS === undefined) {
     console.error("PARENT_SAFE_ADDRESS environment variable is missing!");
@@ -23,8 +44,22 @@ export const getConfig = () => {
     process.exit(1);
   }
 
+  const parentSafeAddress = getAddress(process.env.PARENT_SAFE_ADDRESS);
+
   if (process.env.CHAIN === undefined) {
     console.error("CHAIN environment variable is missing!");
+    process.exit(1);
+  }
+
+  const chain =
+    process.env.CHAIN === "mainnet"
+      ? mainnet
+      : process.env.CHAIN === "sepolia"
+      ? sepolia
+      : undefined;
+
+  if (chain === undefined) {
+    console.error("CHAIN environment variable is malformed!");
     process.exit(1);
   }
 
@@ -33,19 +68,7 @@ export const getConfig = () => {
     process.exit(1);
   }
 
-  const signingKey = process.env.SIGNING_KEY;
-  const parentSafeAddress = getAddress(process.env.PARENT_SAFE_ADDRESS);
   const ensName = process.env.ENS_NAME;
-  const chain =
-    process.env.CHAIN === "mainnet"
-      ? mainnet
-      : process.env.CHAIN === "sepolia"
-      ? sepolia
-      : undefined;
-  if (chain === undefined) {
-    console.error("CHAIN environment variable is malformed!");
-    process.exit(1);
-  }
 
   const ensNameWrapperAddress =
     chain === mainnet
@@ -76,6 +99,7 @@ export const getConfig = () => {
   }
 
   return {
+    dryRun,
     signingKey,
     parentSafeAddress,
     chain,
