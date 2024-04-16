@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { readFileSync } from "fs";
 import { getAddress, isHex } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 
@@ -98,6 +99,38 @@ export const getConfig = () => {
     process.exit(1);
   }
 
+  const proposalTitle = process.env.PROPOSAL_TITLE;
+  if (proposalTitle === undefined) {
+    console.error("PROPOSAL_TITLE environment variable is missing!");
+    process.exit(1);
+  }
+
+  const proposalDescriptionFile = process.env.PROPOSAL_DESCRIPTION_FILE;
+  if (proposalDescriptionFile === undefined) {
+    console.error("PROPOSAL_DESCRIPTION_FILE environment variable is missing!");
+    process.exit(1);
+  }
+
+  let proposalDescription;
+  try {
+    proposalDescription = JSON.stringify(
+      readFileSync(`src/proposal-assets/${proposalDescriptionFile}`, "utf-8")
+    );
+  } catch (e) {
+    console.error(
+      `PROPOSAL_DESCRIPTION_FILE environment variable refers to an unknown file. Please create a file at "src/proposal-assets/${proposalDescriptionFile}" and fill it with your proposal description.`
+    );
+    process.exit(1);
+  }
+
+  const proposalDocumentationUrl = process.env.PROPOSAL_DOCUMENTATION_URL;
+  if (proposalDocumentationUrl === undefined) {
+    console.error(
+      "PROPOSAL_DOCUMENTATION_URL environment variable is missing!"
+    );
+    process.exit(1);
+  }
+
   return {
     dryRun,
     signingKey,
@@ -107,5 +140,8 @@ export const getConfig = () => {
     ensNameWrapperAddress,
     ensPublicResolverAddress,
     ensIpfsHash,
+    proposalTitle,
+    proposalDescription,
+    proposalDocumentationUrl,
   };
 };

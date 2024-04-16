@@ -87,7 +87,7 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
           config.ensIpfsHash
         ),
       ],
-      '{"title":"Testing two transactions","description":"Remove all text records"}',
+      `{"title":"${config.proposalTitle}","description":${config.proposalDescription},"documentationUrl":"${config.proposalDocumentationUrl}"}`,
     ]);
     console.log(`Proposal submitted at ${proposal}`);
   }
