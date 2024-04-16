@@ -47,18 +47,6 @@ export const getConfig = () => {
     process.exit(1);
   }
 
-  // ens
-  //
-  // mainnet
-  // name wrapper: 0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401
-  // base registrar: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
-  // public resolver: 0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63
-  //
-  // sepolia
-  // name wrapper: 0x0635513f179D50A207757E05759CbD106d7dFcE8
-  // base registrar: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
-  // public resolver: 0x8FADE66B79cC9f707aB26799354482EB93a5B7dD
-
   const ensNameWrapperAddress =
     chain === mainnet
       ? getAddress("0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401")
@@ -66,7 +54,24 @@ export const getConfig = () => {
       ? getAddress("0x0635513f179D50A207757E05759CbD106d7dFcE8")
       : undefined;
   if (ensNameWrapperAddress === undefined) {
-    console.error("ENS Name Wrapper Address can't be set");
+    console.error("ENS Name Wrapper address can't be set");
+    process.exit(1);
+  }
+
+  const ensPublicResolverAddress =
+    chain === mainnet
+      ? getAddress("0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63")
+      : chain === sepolia
+      ? getAddress("0x8FADE66B79cC9f707aB26799354482EB93a5B7dD")
+      : undefined;
+  if (ensPublicResolverAddress === undefined) {
+    console.error("ENS Public Resolver address can't be set");
+    process.exit(1);
+  }
+
+  const ensIpfsHash = process.env.ENS_IPFS_HASH;
+  if (ensIpfsHash === undefined) {
+    console.error("ENS_IPFS_HASH environment variable is missing!");
     process.exit(1);
   }
 
@@ -76,5 +81,7 @@ export const getConfig = () => {
     chain,
     ensName,
     ensNameWrapperAddress,
+    ensPublicResolverAddress,
+    ensIpfsHash,
   };
 };

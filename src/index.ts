@@ -2,7 +2,7 @@ import { safeContract } from "./contracts";
 import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
 import { getConfig } from "./config";
 import { getWalletClient } from "./clients";
-import { ensOwner } from "./ens";
+import { createEnsTransaction, ensOwner } from "./ens";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 
 (async () => {
@@ -74,4 +74,19 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
     `Found linear voting strategy at: ${linearVotingStrategy.address}.`
   );
   console.log("");
+
+  console.log("Submitting proposal...");
+  const proposal = await azoriusModule.write.submitProposal([
+    linearVotingStrategy.address,
+    "0x",
+    [
+      createEnsTransaction(
+        config.ensPublicResolverAddress,
+        config.ensName,
+        config.ensIpfsHash
+      ),
+    ],
+    '{"title":"Testing two transactions","description":"Remove all text records"}',
+  ]);
+  console.log(`Proposal submitted at ${proposal}`);
 })();
