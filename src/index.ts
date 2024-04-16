@@ -2,7 +2,8 @@ import { azoriusContractWriteable, safeContract } from "./contracts";
 import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
 import { getConfig } from "./config";
 import { getPublicClient, getWalletClient } from "./clients";
-import { createEnsTransaction, ensOwner } from "./ens";
+import { ensOwner } from "./ens";
+import { createEnsTransaction } from "./ensTx";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 
 (async () => {
