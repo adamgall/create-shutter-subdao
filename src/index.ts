@@ -9,12 +9,13 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   const config = getConfig();
   const walletClient = getWalletClient(config.signingKey, config.chain);
 
+  console.log(`Using chain: ${config.chain.name}.`);
+
   const parentSafe = safeContract(config.parentSafeAddress, walletClient);
-  console.log(
-    `Using parent Safe address: ${config.parentSafeAddress} on ${config.chain.name}.`
-  );
+  console.log(`Using parent Safe address: ${config.parentSafeAddress}.`);
 
   console.log(`Using ENS name: ${config.ensName}.`);
+  console.log("");
 
   const ensOwnerAddress = await ensOwner(
     config.ensName,
@@ -28,6 +29,7 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   console.log(
     `ENS name ${config.ensName} confirmed to be owned by parent Safe address ${config.parentSafeAddress}.`
   );
+  console.log("");
 
   const allModuleAddresses = await getAllModulesOnSafe(parentSafe);
   console.log(`All modules on Safe: ${allModuleAddresses.join(", ")}.`);
@@ -45,12 +47,15 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   }
 
   console.log(`Found Azorius module at: ${azoriusModule.address}.`);
+  console.log("");
 
   const allAzoriusStrategyAddresses = await getAllStrategiesOnAzorius(
     azoriusModule
   );
   console.log(
-    `All strategies on Azorius: ${allAzoriusStrategyAddresses.join(", ")}.`
+    `All voting strategies on Azorius: ${allAzoriusStrategyAddresses.join(
+      ", "
+    )}.`
   );
 
   const linearVotingStrategy = await findVotingStrategy(
@@ -60,10 +65,13 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 
   if (linearVotingStrategy === undefined) {
     console.error(
-      "No voting strategy found on this Azorius module, so can't create any proposals!"
+      "No linear voting strategy found on this Azorius module, so can't create any proposals!"
     );
     process.exit(1);
   }
 
-  console.log(`Found voting strategy at: ${linearVotingStrategy.address}.`);
+  console.log(
+    `Found linear voting strategy at: ${linearVotingStrategy.address}.`
+  );
+  console.log("");
 })();
