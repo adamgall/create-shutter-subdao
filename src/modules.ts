@@ -68,7 +68,7 @@ export const findAzoriusModule = async (
       });
     } catch {
       // If we can't read those functions, this isn't the Azorius module.
-      // On to the next one
+      // On to the next one.
       continue;
     }
 

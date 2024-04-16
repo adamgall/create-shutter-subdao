@@ -3,6 +3,7 @@ import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
 import { getConfig } from "./config";
 import { getWalletClient } from "./clients";
 import { ensOwner } from "./ens";
+import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 
 (async () => {
   const config = getConfig();
@@ -44,4 +45,25 @@ import { ensOwner } from "./ens";
   }
 
   console.log(`Found Azorius module at: ${azoriusModule.address}.`);
+
+  const allAzoriusStrategyAddresses = await getAllStrategiesOnAzorius(
+    azoriusModule
+  );
+  console.log(
+    `All strategies on Azorius: ${allAzoriusStrategyAddresses.join(", ")}.`
+  );
+
+  const linearVotingStrategy = await findVotingStrategy(
+    walletClient,
+    allAzoriusStrategyAddresses
+  );
+
+  if (linearVotingStrategy === undefined) {
+    console.error(
+      "No voting strategy found on this Azorius module, so can't create any proposals!"
+    );
+    process.exit(1);
+  }
+
+  console.log(`Found voting strategy at: ${linearVotingStrategy.address}.`);
 })();
