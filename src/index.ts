@@ -77,19 +77,19 @@ import { simulate } from "./simulate";
   // );
   // console.log("");
 
-  await simulate(publicClient);
-  process.exit(0);
-
   // if (config.dryRun === true) {
   //   console.log("This is a DRY_RUN, not making any transactions.");
   //   process.exit(0);
   // }
 
-  // const walletClient = getWalletClient(config.signingKey, config.chain);
+  const walletClient = getWalletClient(config.signingKey, config.chain);
   // const azoriusModuleWriteable = azoriusContractWriteable(
   //   azoriusModule.address,
   //   walletClient
   // );
+
+  await simulate(walletClient);
+  process.exit(0);
 
   // console.log("Submitting proposal...");
   // const proposal = await azoriusModuleWriteable.write.submitProposal([
