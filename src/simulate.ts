@@ -24,19 +24,6 @@ import {
 } from "./abis";
 import { randomBytes } from "crypto";
 
-// https://github.com/safe-global/safe-deployments/tree/main/src/assets/v1.3.0
-
-const gnosisSafeProxyFactoryAddress: Address =
-  "0xc22834581ebc8527d974f8a1c97e1bea4ef910bc";
-const gnosisSafeL2SingletonAddress: Address =
-  "0xfb1bffc9d739b8d520daf37df666da4c687191ea";
-const moduleProxyFactoryAddress: Address =
-  "0xe93e4b198097c4cb3a6de594c90031cdac0b88f3";
-const fractalModuleMasterCopyAddress: Address =
-  "0x1b26345a4a41d9f588e1b161b6e8f21d27547184";
-const multiSendCallOnlyAddress: Address =
-  "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B";
-
 const saltNonce = bytesToBigInt(randomBytes(32));
 
 const salt = (initializer: Hex, saltNonce: bigint) =>
@@ -63,7 +50,15 @@ export const encodeMultiSend = (
     .join("")}`;
 };
 
-export const simulate = async (client: PublicClient) => {
+export const simulate = async (
+  client: PublicClient,
+  multiSendCallOnlyAddress: Address,
+  compatibilityFallbackHandlerAddress: Address,
+  gnosisSafeProxyFactoryAddress: Address,
+  gnosisSafeL2SingletonAddress: Address,
+  moduleProxyFactoryAddress: Address,
+  fractalModuleMasterCopyAddress: Address
+) => {
   const gnosisSafeInitializer = encodeFunctionData({
     abi: GnosisSafeL2Abi,
     functionName: "setup",
@@ -76,7 +71,7 @@ export const simulate = async (client: PublicClient) => {
       1n, // _threshold // hardcode to 1
       zeroAddress, // to
       zeroHash, // data
-      "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804", // fallbackHandler
+      compatibilityFallbackHandlerAddress, // fallbackHandler
       "0x0000000000000000000000000000000000000000", // paymentToken
       0n, // payment
       "0x0000000000000000000000000000000000000000", // paymentReceiver
