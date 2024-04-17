@@ -133,15 +133,27 @@ export const getConfig = () => {
 
   return {
     dryRun,
-    signingKey,
-    parentSafeAddress,
-    chain,
-    ensName,
-    ensNameWrapperAddress,
-    ensPublicResolverAddress,
-    ensIpfsHash,
-    proposalTitle,
-    proposalDescription,
-    proposalDocumentationUrl,
+    network: {
+      chain,
+      signingKey,
+    },
+    contractAddresses: {
+      user: {
+        parentSafeAddress,
+      },
+      ens: {
+        ensNameWrapperAddress,
+        ensPublicResolverAddress,
+      },
+    },
+    ensData: {
+      ensName,
+      ensIpfsHash,
+    },
+    proposalData: {
+      proposalTitle,
+      proposalDescription,
+      proposalDocumentationUrl,
+    },
   };
 };

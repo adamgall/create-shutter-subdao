@@ -8,27 +8,32 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 
 (async () => {
   const config = getConfig();
-  const publicClient = getPublicClient(config.chain);
+  const publicClient = getPublicClient(config.network.chain);
 
-  console.log(`Using chain: ${config.chain.name}.`);
+  console.log(`Using chain: ${config.network.chain.name}.`);
 
-  const parentSafe = safeContract(config.parentSafeAddress, publicClient);
-  console.log(`Using parent Safe address: ${config.parentSafeAddress}.`);
+  const parentSafe = safeContract(
+    config.contractAddresses.user.parentSafeAddress,
+    publicClient
+  );
+  console.log(
+    `Using parent Safe address: ${config.contractAddresses.user.parentSafeAddress}.`
+  );
 
-  console.log(`Using ENS name: ${config.ensName}.`);
+  console.log(`Using ENS name: ${config.ensData.ensName}.`);
   console.log("");
 
   const ensOwnerAddress = await ensOwner(
-    config.ensName,
-    config.ensNameWrapperAddress,
+    config.ensData.ensName,
+    config.contractAddresses.ens.ensNameWrapperAddress,
     publicClient
   );
-  if (config.parentSafeAddress !== ensOwnerAddress) {
+  if (config.contractAddresses.user.parentSafeAddress !== ensOwnerAddress) {
     console.error("ENS name not owned by parent Safe address!");
     process.exit(1);
   }
   console.log(
-    `ENS name ${config.ensName} confirmed to be owned by parent Safe address ${config.parentSafeAddress}.`
+    `ENS name ${config.ensData.ensName} confirmed to be owned by parent Safe address ${config.contractAddresses.user.parentSafeAddress}.`
   );
   console.log("");
 
@@ -81,7 +86,10 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
     process.exit(0);
   }
 
-  const walletClient = getWalletClient(config.signingKey, config.chain);
+  const walletClient = getWalletClient(
+    config.network.signingKey,
+    config.network.chain
+  );
   const azoriusModuleWriteable = azoriusContractWriteable(
     azoriusModule.address,
     walletClient
@@ -93,12 +101,12 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
     "0x",
     [
       createEnsTransaction(
-        config.ensPublicResolverAddress,
-        config.ensName,
-        config.ensIpfsHash
+        config.contractAddresses.ens.ensPublicResolverAddress,
+        config.ensData.ensName,
+        config.ensData.ensIpfsHash
       ),
     ],
-    `{"title":"${config.proposalTitle}","description":${config.proposalDescription},"documentationUrl":"${config.proposalDocumentationUrl}"}`,
+    `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
   ]);
   console.log(`Proposal submitted at ${proposal}`);
 })();
