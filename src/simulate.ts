@@ -11,8 +11,6 @@ import {
   hexToBigInt,
   keccak256,
   parseAbiParameters,
-  toHex,
-  zeroAddress,
 } from "viem";
 import {
   FractalModuleAbi,
@@ -21,6 +19,8 @@ import {
   ModuleProxyFactoryAbi,
 } from "./abis";
 import { randomBytes } from "crypto";
+
+// https://github.com/safe-global/safe-deployments/tree/main/src/assets/v1.3.0
 
 export const simulate = async (publicClient: PublicClient) => {
   console.log("");
@@ -103,7 +103,7 @@ export const simulate = async (publicClient: PublicClient) => {
       encodeAbiParameters(
         parseAbiParameters("address, address, address, address[]"),
         [
-          "0x0FAB989675bcbE3adFBAE4eC8E54061CcCE85020", // _owner // original parent safe // TODO update this
+          predictedSafeAddress, // _owner // original parent safe // TODO update this
           predictedSafeAddress, // _avatar // new child safe
           predictedSafeAddress, // _target // new child safe
           [], // _controllers
