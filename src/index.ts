@@ -76,26 +76,29 @@ import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
   );
   console.log("");
 
-  if (config.dryRun === false) {
-    const walletClient = getWalletClient(config.signingKey, config.chain);
-    const azoriusModuleWriteable = azoriusContractWriteable(
-      azoriusModule.address,
-      walletClient
-    );
-
-    console.log("Submitting proposal...");
-    const proposal = await azoriusModuleWriteable.write.submitProposal([
-      linearVotingStrategy.address,
-      "0x",
-      [
-        createEnsTransaction(
-          config.ensPublicResolverAddress,
-          config.ensName,
-          config.ensIpfsHash
-        ),
-      ],
-      `{"title":"${config.proposalTitle}","description":${config.proposalDescription},"documentationUrl":"${config.proposalDocumentationUrl}"}`,
-    ]);
-    console.log(`Proposal submitted at ${proposal}`);
+  if (config.dryRun === true) {
+    console.log("This is a DRY_RUN, not making any transactions.");
+    process.exit(0);
   }
+
+  const walletClient = getWalletClient(config.signingKey, config.chain);
+  const azoriusModuleWriteable = azoriusContractWriteable(
+    azoriusModule.address,
+    walletClient
+  );
+
+  console.log("Submitting proposal...");
+  const proposal = await azoriusModuleWriteable.write.submitProposal([
+    linearVotingStrategy.address,
+    "0x",
+    [
+      createEnsTransaction(
+        config.ensPublicResolverAddress,
+        config.ensName,
+        config.ensIpfsHash
+      ),
+    ],
+    `{"title":"${config.proposalTitle}","description":${config.proposalDescription},"documentationUrl":"${config.proposalDocumentationUrl}"}`,
+  ]);
+  console.log(`Proposal submitted at ${proposal}`);
 })();
