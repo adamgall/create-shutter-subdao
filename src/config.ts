@@ -286,11 +286,13 @@ const getFractalRegistryAddress = (chain: Chain) => {
   return fractalRegistryAddress;
 };
 
-const getOwners = () => {
-  const ownersRaw = process.env.MULTISIG_OWNERS;
+const getChildSafeMultisigOwners = () => {
+  const ownersRaw = process.env.CHILD_SAFE_MULTISIG_OWNERS;
 
   if (ownersRaw === undefined) {
-    console.error("MULTISIG_OWNERS environment variable is missing!");
+    console.error(
+      "CHILD_SAFE_MULTISIG_OWNERS environment variable is missing!"
+    );
     process.exit(1);
   }
 
@@ -303,14 +305,14 @@ const getOwners = () => {
       .map((owner) => getAddress(owner));
   } catch {
     console.error(
-      "MULTISIG_OWNERS environment variable has an invalid address in it!"
+      "CHILD_SAFE_MULTISIG_OWNERS environment variable has an invalid address in it!"
     );
     process.exit(1);
   }
 
   if (owners.length === 0) {
     console.error(
-      "MULTISIG_OWNERS environment variable is malformed, no addresses present!"
+      "CHILD_SAFE_MULTISIG_OWNERS environment variable is malformed, no addresses present!"
     );
     process.exit(1);
   }
@@ -318,11 +320,13 @@ const getOwners = () => {
   return owners;
 };
 
-const getThreshold = (owners: Address[]) => {
-  const thresholdRaw = process.env.MULTISIG_THRESHOLD;
+const getChildSafeMultisigThreshold = (owners: Address[]) => {
+  const thresholdRaw = process.env.CHILD_SAFE_MULTISIG_THRESHOLD;
 
   if (thresholdRaw === undefined) {
-    console.error("MULTISIG_THRESHOLD environment variable is missing!");
+    console.error(
+      "CHILD_SAFE_MULTISIG_THRESHOLD environment variable is missing!"
+    );
     process.exit(1);
   }
 
@@ -330,7 +334,7 @@ const getThreshold = (owners: Address[]) => {
 
   if (threshold > BigInt(owners.length)) {
     console.error(
-      "MULTISIG_THRESHOLD cannot be greater than the number of MULTISIG_OWNERS!"
+      "CHILD_SAFE_MULTISIG_THRESHOLD cannot be greater than the number of CHILD_SAFE_MULTISIG_OWNERS!"
     );
     process.exit(1);
   }
@@ -351,14 +355,19 @@ const getChildSafeName = () => {
 
 export const getConfig = () => {
   const dryRun = getDryRun();
-  const signingKey = getSigningKey();
-  const parentSafeAddress = getParentSafeAddress();
+
   const chain = getChain();
+  const signingKey = getSigningKey();
+
+  const parentSafeAddress = getParentSafeAddress();
+
   const ensName = getEnsName();
   const ensIpfsHash = getEnsIpfsHash();
+
   const proposalTitle = getProposalTitle();
   const proposalDescription = getProposalDescription();
   const proposalDocumentationUrl = getProposalDocumentationUrl();
+
   const ensNameWrapperAddress = getEnsNameWrapperAddress(chain);
   const ensPublicResolverAddress = getEnsPublicResolverAddress(chain);
   const gnosisSafeProxyFactoryAddress = getGnosisSafeProxyFactoryAddress(chain);
@@ -370,9 +379,12 @@ export const getConfig = () => {
   const compatibilityFallbackHandlerAddress =
     getCompatibilityFallbackHandlerAddress(chain);
   const fractalRegistryAddress = getFractalRegistryAddress(chain);
-  const multisigOwners = getOwners();
-  const multisigThreshold = getThreshold(multisigOwners);
+
   const childSafeName = getChildSafeName();
+  const childSafeMultisigOwners = getChildSafeMultisigOwners();
+  const childSafeMultisigThreshold = getChildSafeMultisigThreshold(
+    childSafeMultisigOwners
+  );
 
   return {
     dryRun,
@@ -380,12 +392,10 @@ export const getConfig = () => {
       chain,
       signingKey,
     },
-    multisig: {
-      multisigOwners,
-      multisigThreshold,
-    },
     childSafe: {
       childSafeName,
+      childSafeMultisigOwners,
+      childSafeMultisigThreshold,
     },
     contractAddresses: {
       user: {

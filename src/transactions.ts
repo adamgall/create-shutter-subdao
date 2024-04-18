@@ -165,6 +165,22 @@ export const getPredictedSafeAddress = async (
   });
 };
 
+export const getPredictedFractalModuleAddress = (
+  moduleMasterCopyAddress: Address,
+  moduleProxyFactoryAddress: Address,
+  moduleInitializerData: Hex,
+  saltNonce: bigint
+) => {
+  return getContractAddress({
+    bytecode: `0x602d8060093d393df3363d3d373d3d3d363d73${moduleMasterCopyAddress.slice(
+      2
+    )}5af43d82803e903d91602b57fd5bf3`,
+    from: moduleProxyFactoryAddress,
+    opcode: "CREATE2",
+    salt: salt(moduleInitializerData, saltNonce),
+  });
+};
+
 export const createDeploySafeTransaction = (
   gnosisSafeProxyFactoryAddress: Address,
   gnosisSafeL2SingletonAddress: Address,
@@ -205,89 +221,118 @@ export const createDeployFractalModuleTransaction = (
   };
 };
 
-export const createCleanupTransaction = (
-  predictedSafeAddress: Address,
+export const multiSendFunctionData = (
+  multiSendTransactions: {
+    to: Address;
+    value: bigint;
+    data: Hex;
+    operation: number;
+  }[]
+) => {
+  return encodeFunctionData({
+    abi: MultiSendCallOnlyAbi,
+    functionName: "multiSend",
+    args: [encodeMultiSend(multiSendTransactions)],
+  });
+};
+
+export const createMultiSendTransaction = (
   multiSendCallOnlyAddress: Address,
-  fractalModuleMasterCopyAddress: Address,
-  moduleProxyFactoryAddress: Address,
-  fractalModuleInitializer: Hex,
-  saltNonce: bigint,
-  owners: Address[],
-  threshold: bigint,
-  childSafeName: string,
-  fractalRegistryAddress: Address
+  multiSendTransactions: {
+    operation: number;
+    to: Address;
+    value: bigint;
+    data: Hex;
+  }[]
+) => {
+  return {
+    to: multiSendCallOnlyAddress,
+    operation: 0,
+    value: 0n,
+    data: multiSendFunctionData(multiSendTransactions),
+  };
+};
+
+export const createSafeExecTransaction = (
+  safeAddress: Address,
+  target: Address,
+  data: Hex
 ) => {
   return {
     operation: 0,
-    to: predictedSafeAddress,
+    to: safeAddress,
     value: 0n,
     data: encodeFunctionData({
       abi: GnosisSafeL2Abi,
       functionName: "execTransaction",
       args: [
-        multiSendCallOnlyAddress,
+        target,
         0n,
-        encodeFunctionData({
-          abi: MultiSendCallOnlyAbi,
-          functionName: "multiSend",
-          args: [
-            encodeMultiSend([
-              {
-                operation: 0,
-                to: predictedSafeAddress,
-                value: 0n,
-                data: encodeFunctionData({
-                  abi: GnosisSafeL2Abi,
-                  functionName: "enableModule",
-                  args: [
-                    getContractAddress({
-                      bytecode: `0x602d8060093d393df3363d3d373d3d3d363d73${fractalModuleMasterCopyAddress.slice(
-                        2
-                      )}5af43d82803e903d91602b57fd5bf3`,
-                      from: moduleProxyFactoryAddress,
-                      opcode: "CREATE2",
-                      salt: salt(fractalModuleInitializer, saltNonce),
-                    }),
-                  ],
-                }),
-              },
-              {
-                operation: 0,
-                to: predictedSafeAddress,
-                value: 0n,
-                data: encodeFunctionData({
-                  abi: GnosisSafeL2Abi,
-                  functionName: "removeOwner",
-                  args: [
-                    owners[owners.length - 1],
-                    multiSendCallOnlyAddress,
-                    threshold,
-                  ],
-                }),
-              },
-              {
-                operation: 0,
-                to: fractalRegistryAddress,
-                value: 0n,
-                data: encodeFunctionData({
-                  abi: FractalRegistryAbi,
-                  functionName: "updateDAOName",
-                  args: [childSafeName],
-                }),
-              },
-            ]),
-          ],
-        }),
+        data,
         1,
         0n,
         0n,
         0n,
         zeroAddress,
         zeroAddress,
-        `0x000000000000000000000000${multiSendCallOnlyAddress.slice(
+        `0x000000000000000000000000${target.slice(
           2
         )}000000000000000000000000000000000000000000000000000000000000000001`,
       ],
+    }),
+  };
+};
+
+export const createEnableModuleTransaction = (
+  safeAddress: Address,
+  // moduleMasterCopyAddress: Address,
+  // moduleProxyFactoryAddress: Address,
+  // moduleInitializerData: Hex,
+  // saltNonce: bigint,
+  predictedModuleAddress: Address
+) => {
+  return {
+    operation: 0,
+    to: safeAddress,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: GnosisSafeL2Abi,
+      functionName: "enableModule",
+      args: [predictedModuleAddress],
+    }),
+  };
+};
+
+export const createRemoveOwnerTransaction = (
+  safeAddress: Address,
+  ownerToRemove: Address,
+  otherOwners: Address[],
+  threshold: bigint
+) => {
+  return {
+    operation: 0,
+    to: safeAddress,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: GnosisSafeL2Abi,
+      functionName: "removeOwner",
+      args: [otherOwners[otherOwners.length - 1], ownerToRemove, threshold],
+    }),
+  };
+};
+
+export const createUpdateDaoNameTransaction = (
+  fractalRegistryAddress: Address,
+  daoName: string
+) => {
+  return {
+    operation: 0,
+    to: fractalRegistryAddress,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: FractalRegistryAbi,
+      functionName: "updateDAOName",
+      args: [daoName],
     }),
   };
 };

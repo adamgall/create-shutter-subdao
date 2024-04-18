@@ -1,3 +1,4 @@
+import * as readline from "readline/promises";
 import {
   azoriusContractWriteable,
   gnosisSafeProxyFactoryContract,
@@ -9,37 +10,71 @@ import { getPublicClient, getWalletClient } from "./clients";
 import { ensOwner } from "./ens";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 import {
-  createCleanupTransaction,
   createDeclareSubDaoTransaction,
   createDeployFractalModuleTransaction,
   createDeploySafeTransaction,
+  createEnableModuleTransaction,
   createEnsTransaction,
-  encodeMultiSend,
+  createMultiSendTransaction,
+  createRemoveOwnerTransaction,
+  createSafeExecTransaction,
+  createUpdateDaoNameTransaction,
   generateSaltNonce,
   getFractalModuleInitializer,
   getGnosisSafeInitializer,
+  getPredictedFractalModuleAddress,
   getPredictedSafeAddress,
+  multiSendFunctionData,
   salt,
 } from "./transactions";
-import { encodeFunctionData } from "viem";
-import { MultiSendCallOnlyAbi } from "./abis";
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
 (async () => {
-  const config = getConfig();
-  const publicClient = getPublicClient(config.network.chain);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+  };
 
-  console.log(`Using chain: ${config.network.chain.name}.`);
+  const config = getConfig();
+  console.table([
+    { property: "DRY RUN", value: config.dryRun },
+    { property: "Chain", value: config.network.chain.name },
+    {
+      property: "Parent Safe address",
+      value: config.contractAddresses.user.parentSafeAddress,
+    },
+    { property: "ENS name", value: config.ensData.ensName },
+    { property: "ENS IPFS hash", value: config.ensData.ensIpfsHash },
+    { property: "Proposal title", value: config.proposalData.proposalTitle },
+    {
+      property: "Proposal description",
+      value: `${config.proposalData.proposalDescription.substring(0, 50)}...`,
+    },
+    {
+      property: "Proposal documentation URL",
+      value: config.proposalData.proposalDocumentationUrl,
+    },
+    ...config.childSafe.childSafeMultisigOwners.map((owner, i) => ({
+      property: `Child Safe multisig owner #${i + 1}`,
+      value: owner,
+    })),
+    {
+      property: "Child Safe multisig threshold",
+      value: Number(config.childSafe.childSafeMultisigThreshold),
+    },
+  ]);
+  console.log("");
+
+  const publicClient = getPublicClient(config.network.chain);
 
   const parentSafe = safeContract(
     config.contractAddresses.user.parentSafeAddress,
     publicClient
   );
-  console.log(
-    `Using parent Safe address: ${config.contractAddresses.user.parentSafeAddress}.`
-  );
-
-  console.log(`Using ENS name: ${config.ensData.ensName}.`);
-  console.log("");
 
   const ensOwnerAddress = await ensOwner(
     config.ensData.ensName,
@@ -99,14 +134,18 @@ import { MultiSendCallOnlyAbi } from "./abis";
   );
   console.log("");
 
+  const saltNonce = generateSaltNonce();
+
+  console.log(
+    `Using salt nonce ${saltNonce} for all create2 contract generation and address prediction.`
+  );
+  console.log("");
+
   const gnosisSafeInitializer = getGnosisSafeInitializer(
-    config.multisig.multisigOwners,
+    config.childSafe.childSafeMultisigOwners,
     config.contractAddresses.safe.multiSendCallOnlyAddress,
     config.contractAddresses.safe.compatibilityFallbackHandlerAddress
   );
-
-  const saltNonce = generateSaltNonce();
-  // const saltNonce = 2748n;
 
   const predictedSafeAddress = await getPredictedSafeAddress(
     gnosisSafeProxyFactoryContract(
@@ -122,75 +161,211 @@ import { MultiSendCallOnlyAbi } from "./abis";
     predictedSafeAddress
   );
 
+  const predictedFractalModuleAddress = getPredictedFractalModuleAddress(
+    config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
+    config.contractAddresses.safe.moduleProxyFactoryAddress,
+    fractalModuleInitializer,
+    saltNonce
+  );
+
+  console.log(`Child Safe initialization bytecode: ${gnosisSafeInitializer}`);
+  console.log("");
+  console.log(
+    `Fractal Module initilization bytecode: ${fractalModuleInitializer}`
+  );
+  console.log("");
+  console.log(`Predicted Child Safe address: ${predictedSafeAddress}`);
+  console.log(
+    `Predicted Fractal Module address: ${predictedFractalModuleAddress}`
+  );
+  console.log("");
+
+  const ensTransaction = createEnsTransaction(
+    config.contractAddresses.ens.ensPublicResolverAddress,
+    config.ensData.ensName,
+    config.ensData.ensIpfsHash
+  );
+
+  console.log(
+    `ENS setText transaction:\n${JSON.stringify(ensTransaction, null, "\t")}`
+  );
+  console.log("");
+
+  const enableModuleTransaction = createEnableModuleTransaction(
+    predictedSafeAddress,
+    predictedFractalModuleAddress
+  );
+
+  console.log(
+    `Enable Fractal module call, for use in nested MultiSend:\n${JSON.stringify(
+      enableModuleTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const removeOwnerTransaction = createRemoveOwnerTransaction(
+    predictedSafeAddress,
+    config.contractAddresses.safe.multiSendCallOnlyAddress,
+    config.childSafe.childSafeMultisigOwners,
+    config.childSafe.childSafeMultisigThreshold
+  );
+
+  console.log(
+    `Remove MultiSend owner call, for use in nested MultiSend:\n${JSON.stringify(
+      removeOwnerTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const updateDaoNameTransaction = createUpdateDaoNameTransaction(
+    config.contractAddresses.fractal.fractalRegistryAddress,
+    config.childSafe.childSafeName
+  );
+
+  console.log(
+    `Update DAO Name call, for use in nested MultiSend:\n${JSON.stringify(
+      updateDaoNameTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const multiSendFunctionDataBytes = multiSendFunctionData([
+    enableModuleTransaction,
+    removeOwnerTransaction,
+    updateDaoNameTransaction,
+  ]);
+
+  console.log(
+    `Nested MultiSend transaction bytes:\n${JSON.stringify(
+      multiSendFunctionDataBytes,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const deploySafeTransaction = createDeploySafeTransaction(
+    config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
+    config.contractAddresses.safe.gnosisSafeL2SingletonAddress,
+    gnosisSafeInitializer,
+    saltNonce
+  );
+
+  console.log(
+    `Deploy new Safe call, for use in outer MultiSend:\n${JSON.stringify(
+      deploySafeTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const deployFractalModuleTransaction = createDeployFractalModuleTransaction(
+    config.contractAddresses.safe.moduleProxyFactoryAddress,
+    config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
+    fractalModuleInitializer,
+    saltNonce
+  );
+
+  console.log(
+    `Deploy Fractal Module call, for use in outer MultiSend:\n${JSON.stringify(
+      deployFractalModuleTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const safeExecTransaction = createSafeExecTransaction(
+    predictedSafeAddress,
+    config.contractAddresses.safe.multiSendCallOnlyAddress,
+    multiSendFunctionDataBytes
+  );
+
+  console.log(
+    `Safe execTransaction call, for use in outer MultiSend:\n${JSON.stringify(
+      safeExecTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const multiSendTransaction = createMultiSendTransaction(
+    config.contractAddresses.safe.multiSendCallOnlyAddress,
+    [deploySafeTransaction, deployFractalModuleTransaction, safeExecTransaction]
+  );
+
+  console.log(
+    `Outer MultiSend transaction:\n${JSON.stringify(
+      multiSendTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const declareSubDaoTransaction = createDeclareSubDaoTransaction(
+    config.contractAddresses.fractal.fractalRegistryAddress,
+    predictedSafeAddress
+  );
+
+  console.log(
+    `Declaring child DAO transaction:\n${JSON.stringify(
+      declareSubDaoTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const submitProposalArgs = [
+    linearVotingStrategy.address,
+    "0x",
+    [ensTransaction, multiSendTransaction, declareSubDaoTransaction],
+    `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
+  ] as const;
+
+  console.log(
+    `Full proposal transaction arguments:\n${JSON.stringify(
+      submitProposalArgs,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
   if (config.dryRun === true) {
-    console.log("This is a DRY_RUN, not making any transactions.");
+    console.log("This is a DRY RUN, not making any transactions.");
     process.exit(0);
   }
 
-  const walletClient = getWalletClient(
-    config.network.signingKey,
-    config.network.chain
+  const answer = await rl.question(
+    "If the above looks correct, type 'continue' to submit the transaction. Otherwise, enter anything else to quit.\n"
   );
+
+  if (answer !== "continue") {
+    process.exit(0);
+  }
+  console.log("");
 
   const azoriusModuleWriteable = azoriusContractWriteable(
     azoriusModule.address,
-    walletClient
+    getWalletClient(config.network.signingKey, config.network.chain)
   );
 
-  console.log("Submitting proposal...");
+  console.log("Submitting transaction...");
 
-  const proposal = await azoriusModuleWriteable.write.submitProposal([
-    linearVotingStrategy.address,
-    "0x",
-    [
-      createEnsTransaction(
-        config.contractAddresses.ens.ensPublicResolverAddress,
-        config.ensData.ensName,
-        config.ensData.ensIpfsHash
-      ),
-      {
-        to: config.contractAddresses.safe.multiSendCallOnlyAddress,
-        operation: 0,
-        value: 0n,
-        data: encodeFunctionData({
-          abi: MultiSendCallOnlyAbi,
-          functionName: "multiSend",
-          args: [
-            encodeMultiSend([
-              createDeploySafeTransaction(
-                config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
-                config.contractAddresses.safe.gnosisSafeL2SingletonAddress,
-                gnosisSafeInitializer,
-                saltNonce
-              ),
-              createDeployFractalModuleTransaction(
-                config.contractAddresses.safe.moduleProxyFactoryAddress,
-                config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
-                fractalModuleInitializer,
-                saltNonce
-              ),
-              createCleanupTransaction(
-                predictedSafeAddress,
-                config.contractAddresses.safe.multiSendCallOnlyAddress,
-                config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
-                config.contractAddresses.safe.moduleProxyFactoryAddress,
-                fractalModuleInitializer,
-                saltNonce,
-                config.multisig.multisigOwners,
-                config.multisig.multisigThreshold,
-                config.childSafe.childSafeName,
-                config.contractAddresses.fractal.fractalRegistryAddress
-              ),
-            ]),
-          ],
-        }),
-      },
-      createDeclareSubDaoTransaction(
-        config.contractAddresses.fractal.fractalRegistryAddress,
-        predictedSafeAddress
-      ),
-    ],
-    `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
-  ]);
-  console.log(`Proposal submitted at ${proposal}`);
+  const proposalHash = await azoriusModuleWriteable.simulate.submitProposal(
+    submitProposalArgs
+  );
+
+  console.log(`Proposal created at transaction ${proposalHash}`);
+  process.exit(0);
 })();
