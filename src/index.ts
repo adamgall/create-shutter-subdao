@@ -43,7 +43,7 @@ const rl = readline.createInterface({
   const publicClient = getPublicClient(config.network.chain);
 
   const parentSafe = safeContract(
-    config.contractAddresses.user.parentSafeAddress,
+    config.parentSafe.parentSafeAddress,
     publicClient
   );
 
@@ -52,12 +52,12 @@ const rl = readline.createInterface({
     config.contractAddresses.ens.ensNameWrapperAddress,
     publicClient
   );
-  if (config.contractAddresses.user.parentSafeAddress !== ensOwnerAddress) {
+  if (config.parentSafe.parentSafeAddress !== ensOwnerAddress) {
     console.error("ENS name not owned by parent Safe address!");
     process.exit(1);
   }
   console.log(
-    `ENS name ${config.ensData.ensName} confirmed to be owned by parent Safe address ${config.contractAddresses.user.parentSafeAddress}.`
+    `ENS name ${config.ensData.ensName} confirmed to be owned by parent Safe address ${config.parentSafe.parentSafeAddress}.`
   );
   console.log("");
 
@@ -128,7 +128,7 @@ const rl = readline.createInterface({
   );
 
   const fractalModuleInitializer = getFractalModuleInitializer(
-    config.contractAddresses.user.parentSafeAddress,
+    config.parentSafe.parentSafeAddress,
     predictedSafeAddress
   );
 

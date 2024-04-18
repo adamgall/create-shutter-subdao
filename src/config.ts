@@ -353,6 +353,74 @@ const getChildSafeName = () => {
   return childSafeName;
 };
 
+const getFundingTokens = () => {
+  const fundingAddressesRaw = process.env.FUNDING_ERC20_ADDRESSES;
+  const fundingAmountsRaw = process.env.FUNDING_ERC20_AMOUNTS;
+
+  if (fundingAddressesRaw === undefined) {
+    console.error("FUNDING_ERC20_ADDRESSES environment variable is missing!");
+    process.exit(1);
+  }
+
+  if (fundingAmountsRaw === undefined) {
+    console.error("FUNDING_ERC20_AMOUNTS environment variable is missing!");
+    process.exit(1);
+  }
+
+  let fundingAddresses;
+  let fundingAmounts;
+
+  try {
+    fundingAddresses = fundingAddressesRaw
+      .split(",")
+      .map((address) => address.trim())
+      .map((address) => getAddress(address));
+  } catch {
+    console.error(
+      "FUNDING_ERC20_ADDRESSES environment variable has an invalid address in it!"
+    );
+    process.exit(1);
+  }
+
+  try {
+    fundingAmounts = fundingAmountsRaw
+      .split(",")
+      .map((amount) => amount.trim())
+      .map((amount) => BigInt(amount));
+  } catch {
+    console.error(
+      "FUNDING_ERC20_AMOUNTS environment variable has an invalid address in it!"
+    );
+    process.exit(1);
+  }
+
+  if (fundingAddresses.length === 0) {
+    console.error(
+      "FUNDING_ERC20_ADDRESSES environment variable is malformed, no addresses present!"
+    );
+    process.exit(1);
+  }
+
+  if (fundingAmounts.length === 0) {
+    console.error(
+      "FUNDING_ERC20_AMOUNTS environment variable is malformed, no addresses present!"
+    );
+    process.exit(1);
+  }
+
+  if (fundingAmounts.length !== fundingAddresses.length) {
+    console.error(
+      "FUNDING_ERC20_ADDRESSES and FUNDING_ERC20_AMOUNTS environment variables are different lengths!"
+    );
+    process.exit(1);
+  }
+
+  return fundingAddresses.map((address, i) => ({
+    address: address,
+    amount: fundingAmounts[i],
+  }));
+};
+
 export const getConfig = () => {
   const dryRun = getDryRun();
 
@@ -386,6 +454,8 @@ export const getConfig = () => {
     childSafeMultisigOwners
   );
 
+  const fundingTokens = getFundingTokens();
+
   console.log("User provided environment variables:");
   console.table([
     { property: "DRY RUN", value: dryRun },
@@ -413,6 +483,10 @@ export const getConfig = () => {
       property: "Child Safe multisig threshold",
       value: Number(childSafeMultisigThreshold),
     },
+    ...fundingTokens.map((token, i) => ({
+      property: `Funding address & amount #${i + 1}`,
+      value: `${token.address}, ${token.amount.toString()}`,
+    })),
   ]);
   console.log("");
 
@@ -463,15 +537,16 @@ export const getConfig = () => {
       chain,
       signingKey,
     },
+    parentSafe: {
+      parentSafeAddress,
+      fundingTokens,
+    },
     childSafe: {
       childSafeName,
       childSafeMultisigOwners,
       childSafeMultisigThreshold,
     },
     contractAddresses: {
-      user: {
-        parentSafeAddress,
-      },
       ens: {
         ensNameWrapperAddress,
         ensPublicResolverAddress,
