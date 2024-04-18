@@ -20,5 +20,4 @@ This script will create and post a proposal to a Fractal DAO. The proposal inclu
 
 1. Add a text record to the DAO's ENS name, with a key of `daorequirements` and a value of `ipfs://[hash]`.
 2. Create a new child DAO, which has multisig signers, as well as the Fractal Module (to enable the parent to clawback funds if necessary), as well as Kleros's reality.eth module (to enable Snapshot voting consensus and human-based governance arbitration).
-3. Set up the on-chain relationship between parent and child.
-4. Transfer assets from the parent DAO to the new child DAO.
+3. Transfer assets from the parent DAO to the new child DAO.

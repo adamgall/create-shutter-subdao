@@ -14,12 +14,15 @@ import {
   createDeployFractalModuleTransaction,
   createDeploySafeTransaction,
   createEnsTransaction,
+  encodeMultiSend,
   generateSaltNonce,
   getFractalModuleInitializer,
   getGnosisSafeInitializer,
   getPredictedSafeAddress,
   salt,
 } from "./transactions";
+import { encodeFunctionData } from "viem";
+import { MultiSendCallOnlyAbi } from "./abis";
 
 (async () => {
   const config = getConfig();
@@ -103,6 +106,7 @@ import {
   );
 
   const saltNonce = generateSaltNonce();
+  // const saltNonce = 2748n;
 
   const predictedSafeAddress = await getPredictedSafeAddress(
     gnosisSafeProxyFactoryContract(
@@ -144,30 +148,43 @@ import {
         config.ensData.ensName,
         config.ensData.ensIpfsHash
       ),
-      createDeploySafeTransaction(
-        config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
-        config.contractAddresses.safe.gnosisSafeL2SingletonAddress,
-        gnosisSafeInitializer,
-        saltNonce
-      ),
-      createDeployFractalModuleTransaction(
-        config.contractAddresses.safe.moduleProxyFactoryAddress,
-        config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
-        fractalModuleInitializer,
-        saltNonce
-      ),
-      createCleanupTransaction(
-        predictedSafeAddress,
-        config.contractAddresses.safe.multiSendCallOnlyAddress,
-        config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
-        config.contractAddresses.safe.moduleProxyFactoryAddress,
-        fractalModuleInitializer,
-        saltNonce,
-        config.multisig.multisigOwners,
-        config.multisig.multisigThreshold,
-        config.childSafe.childSafeName,
-        config.contractAddresses.fractal.fractalRegistryAddress
-      ),
+      {
+        to: config.contractAddresses.safe.multiSendCallOnlyAddress,
+        operation: 0,
+        value: 0n,
+        data: encodeFunctionData({
+          abi: MultiSendCallOnlyAbi,
+          functionName: "multiSend",
+          args: [
+            encodeMultiSend([
+              createDeploySafeTransaction(
+                config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
+                config.contractAddresses.safe.gnosisSafeL2SingletonAddress,
+                gnosisSafeInitializer,
+                saltNonce
+              ),
+              createDeployFractalModuleTransaction(
+                config.contractAddresses.safe.moduleProxyFactoryAddress,
+                config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
+                fractalModuleInitializer,
+                saltNonce
+              ),
+              createCleanupTransaction(
+                predictedSafeAddress,
+                config.contractAddresses.safe.multiSendCallOnlyAddress,
+                config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
+                config.contractAddresses.safe.moduleProxyFactoryAddress,
+                fractalModuleInitializer,
+                saltNonce,
+                config.multisig.multisigOwners,
+                config.multisig.multisigThreshold,
+                config.childSafe.childSafeName,
+                config.contractAddresses.fractal.fractalRegistryAddress
+              ),
+            ]),
+          ],
+        }),
+      },
       createDeclareSubDaoTransaction(
         config.contractAddresses.fractal.fractalRegistryAddress,
         predictedSafeAddress
