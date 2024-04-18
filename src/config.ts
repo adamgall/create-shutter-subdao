@@ -1,7 +1,17 @@
 import "dotenv/config";
 import { readFileSync } from "fs";
-import { Address, Chain, getAddress, isHex } from "viem";
+import {
+  Address,
+  Chain,
+  PublicClient,
+  getAddress,
+  isHex,
+  namehash,
+} from "viem";
 import { sepolia, mainnet } from "viem/chains";
+import { confirmTokenOwnership, formatTokens } from "./funding";
+import { getPublicClient } from "./clients";
+import { ensNameWrapperContract } from "./contracts";
 
 const getDryRun = () => {
   if (process.env.DRY_RUN === undefined) {
@@ -81,11 +91,27 @@ const getChain = () => {
   return chain;
 };
 
-const getEnsName = () => {
+const getEnsName = async (
+  publicClient: PublicClient,
+  ensNameWrapperAddress: Address,
+  parentSafeAddress: Address
+) => {
   const ensName = process.env.ENS_NAME;
 
   if (ensName === undefined) {
     console.error("ENS_NAME environment variable is missing!");
+    process.exit(1);
+  }
+
+  const node = namehash(ensName);
+  const nameWrapper = ensNameWrapperContract(
+    ensNameWrapperAddress,
+    publicClient
+  );
+  const ensOwnerAddress = await nameWrapper.read.ownerOf([BigInt(node)]);
+
+  if (parentSafeAddress !== ensOwnerAddress) {
+    console.error("ENS name not owned by parent Safe address!");
     process.exit(1);
   }
 
@@ -353,7 +379,10 @@ const getChildSafeName = () => {
   return childSafeName;
 };
 
-const getFundingTokens = () => {
+const getFundingTokens = async (
+  publicClient: PublicClient,
+  parentSafeAddress: Address
+) => {
   const fundingAddressesRaw = process.env.FUNDING_ERC20_ADDRESSES;
   const fundingAmountsRaw = process.env.FUNDING_ERC20_AMOUNTS;
 
@@ -368,7 +397,6 @@ const getFundingTokens = () => {
   }
 
   let fundingAddresses;
-  let fundingAmounts;
 
   try {
     fundingAddresses = fundingAddressesRaw
@@ -382,17 +410,9 @@ const getFundingTokens = () => {
     process.exit(1);
   }
 
-  try {
-    fundingAmounts = fundingAmountsRaw
-      .split(",")
-      .map((amount) => amount.trim())
-      .map((amount) => BigInt(amount));
-  } catch {
-    console.error(
-      "FUNDING_ERC20_AMOUNTS environment variable has an invalid address in it!"
-    );
-    process.exit(1);
-  }
+  const fundingAmounts = fundingAmountsRaw
+    .split(",")
+    .map((amount) => amount.trim());
 
   if (fundingAddresses.length === 0) {
     console.error(
@@ -415,22 +435,25 @@ const getFundingTokens = () => {
     process.exit(1);
   }
 
-  return fundingAddresses.map((address, i) => ({
-    address: address,
-    amount: fundingAmounts[i],
-  }));
+  const fundingTokens = await formatTokens(
+    fundingAddresses,
+    fundingAmounts,
+    publicClient
+  );
+
+  await confirmTokenOwnership(parentSafeAddress, fundingTokens, publicClient);
+
+  return fundingTokens;
 };
 
-export const getConfig = () => {
+export const getConfig = async () => {
   const dryRun = getDryRun();
 
   const chain = getChain();
+  const publicClient = getPublicClient(chain);
   const signingKey = getSigningKey();
 
   const parentSafeAddress = getParentSafeAddress();
-
-  const ensName = getEnsName();
-  const ensIpfsHash = getEnsIpfsHash();
 
   const proposalTitle = getProposalTitle();
   const proposalDescription = getProposalDescription();
@@ -448,13 +471,20 @@ export const getConfig = () => {
     getCompatibilityFallbackHandlerAddress(chain);
   const fractalRegistryAddress = getFractalRegistryAddress(chain);
 
+  const ensName = await getEnsName(
+    publicClient,
+    ensNameWrapperAddress,
+    parentSafeAddress
+  );
+  const ensIpfsHash = getEnsIpfsHash();
+
   const childSafeName = getChildSafeName();
   const childSafeMultisigOwners = getChildSafeMultisigOwners();
   const childSafeMultisigThreshold = getChildSafeMultisigThreshold(
     childSafeMultisigOwners
   );
 
-  const fundingTokens = getFundingTokens();
+  const fundingTokens = await getFundingTokens(publicClient, parentSafeAddress);
 
   console.log("User provided environment variables:");
   console.table([
@@ -484,8 +514,12 @@ export const getConfig = () => {
       value: Number(childSafeMultisigThreshold),
     },
     ...fundingTokens.map((token, i) => ({
-      property: `Funding address & amount #${i + 1}`,
-      value: `${token.address}, ${token.amount.toString()}`,
+      property: `Funding address #${i + 1}`,
+      value: token.address,
+    })),
+    ...fundingTokens.map((token, i) => ({
+      property: `Funding amount (full units) #${i + 1}`,
+      value: token.amount.toString(),
     })),
   ]);
   console.log("");
@@ -532,6 +566,7 @@ export const getConfig = () => {
   console.log("");
 
   return {
+    publicClient,
     dryRun,
     network: {
       chain,

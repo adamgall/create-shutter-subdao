@@ -6,8 +6,7 @@ import {
 } from "./contracts";
 import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
 import { getConfig } from "./config";
-import { getPublicClient, getWalletClient } from "./clients";
-import { ensOwner } from "./ens";
+import { getWalletClient } from "./clients";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 import {
   createDeclareSubDaoTransaction,
@@ -39,27 +38,13 @@ const rl = readline.createInterface({
     return this.toString();
   };
 
-  const config = getConfig();
-  const publicClient = getPublicClient(config.network.chain);
+  const config = await getConfig();
+  const publicClient = config.publicClient;
 
   const parentSafe = safeContract(
     config.parentSafe.parentSafeAddress,
     publicClient
   );
-
-  const ensOwnerAddress = await ensOwner(
-    config.ensData.ensName,
-    config.contractAddresses.ens.ensNameWrapperAddress,
-    publicClient
-  );
-  if (config.parentSafe.parentSafeAddress !== ensOwnerAddress) {
-    console.error("ENS name not owned by parent Safe address!");
-    process.exit(1);
-  }
-  console.log(
-    `ENS name ${config.ensData.ensName} confirmed to be owned by parent Safe address ${config.parentSafe.parentSafeAddress}.`
-  );
-  console.log("");
 
   const allModuleAddresses = await getAllModulesOnSafe(parentSafe);
   console.log(`All modules on Safe: ${allModuleAddresses.join(", ")}.`);

@@ -15,10 +15,7 @@ import {
   GnosisSafeProxyFactoryAbi,
 } from "./abis";
 
-export const safeContract = (
-  address: Address,
-  client: PublicClient<HttpTransport, Chain>
-) => {
+export const safeContract = (address: Address, client: PublicClient) => {
   return getContract({
     address,
     abi: GnosisSafeL2Abi,
@@ -26,10 +23,7 @@ export const safeContract = (
   });
 };
 
-export const azoriusContract = (
-  address: Address,
-  client: PublicClient<HttpTransport, Chain>
-) => {
+export const azoriusContract = (address: Address, client: PublicClient) => {
   return getContract({
     address,
     abi: AzoriusAbi,
@@ -50,7 +44,7 @@ export const azoriusContractWriteable = (
 
 export const ensNameWrapperContract = (
   address: Address,
-  client: PublicClient<HttpTransport, Chain>
+  client: PublicClient
 ) => {
   return getContract({
     address,
@@ -61,7 +55,7 @@ export const ensNameWrapperContract = (
 
 export const linearVotingContract = (
   address: Address,
-  client: PublicClient<HttpTransport, Chain>
+  client: PublicClient
 ) => {
   return getContract({
     address,
@@ -72,7 +66,7 @@ export const linearVotingContract = (
 
 export const gnosisSafeProxyFactoryContract = (
   address: Address,
-  client: PublicClient<HttpTransport, Chain>
+  client: PublicClient
 ) => {
   return getContract({
     address: address,
