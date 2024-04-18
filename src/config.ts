@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { readFileSync } from "fs";
-import { Chain, getAddress, isHex } from "viem";
+import { Address, Chain, getAddress, isHex } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 
 const getDryRun = () => {
@@ -184,9 +184,9 @@ const getEnsPublicResolverAddress = (chain: Chain) => {
 const getGnosisSafeProxyFactoryAddress = (chain: Chain) => {
   const gnosisSafeProxyFactoryAddress =
     chain === mainnet
-      ? "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2"
+      ? getAddress("0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2")
       : chain === sepolia
-      ? "0xc22834581ebc8527d974f8a1c97e1bea4ef910bc"
+      ? getAddress("0xc22834581ebc8527d974f8a1c97e1bea4ef910bc")
       : undefined;
   if (gnosisSafeProxyFactoryAddress === undefined) {
     console.error("Gnosis Safe Proxy Factory address can't be set!");
@@ -199,9 +199,9 @@ const getGnosisSafeProxyFactoryAddress = (chain: Chain) => {
 const getGnosisSafeL2SingletonAddress = (chain: Chain) => {
   const gnosisSafeL2SingletonAddress =
     chain === mainnet
-      ? "0x3E5c63644E683549055b9Be8653de26E0B4CD36E"
+      ? getAddress("0x3E5c63644E683549055b9Be8653de26E0B4CD36E")
       : chain === sepolia
-      ? "0xfb1bffc9d739b8d520daf37df666da4c687191ea"
+      ? getAddress("0xfb1bffc9d739b8d520daf37df666da4c687191ea")
       : undefined;
   if (gnosisSafeL2SingletonAddress === undefined) {
     console.error("Gnosis Safe L2 Singleton address can't be set!");
@@ -214,9 +214,9 @@ const getGnosisSafeL2SingletonAddress = (chain: Chain) => {
 const getModuleProxyFactoryAddress = (chain: Chain) => {
   const moduleProxyFactoryAddress =
     chain === mainnet
-      ? "0x31Bf73048056fe947B827C0Fe159ACcB5Ae30237"
+      ? getAddress("0x31Bf73048056fe947B827C0Fe159ACcB5Ae30237")
       : chain === sepolia
-      ? "0xe93e4b198097c4cb3a6de594c90031cdac0b88f3"
+      ? getAddress("0xe93e4b198097c4cb3a6de594c90031cdac0b88f3")
       : undefined;
   if (moduleProxyFactoryAddress === undefined) {
     console.error("Module Proxy Factory address can't be set!");
@@ -229,9 +229,9 @@ const getModuleProxyFactoryAddress = (chain: Chain) => {
 const getFractalModuleMasterCopyAddress = (chain: Chain) => {
   const fractalModuleMasterCopyAddress =
     chain === mainnet
-      ? "0x87326A981fc56823e26599Ff4D0A4eceAFfF3be0"
+      ? getAddress("0x87326A981fc56823e26599Ff4D0A4eceAFfF3be0")
       : chain === sepolia
-      ? "0x1b26345a4a41d9f588e1b161b6e8f21d27547184"
+      ? getAddress("0x1b26345a4a41d9f588e1b161b6e8f21d27547184")
       : undefined;
   if (fractalModuleMasterCopyAddress === undefined) {
     console.error("Fractal Module Master Copy address can't be set!");
@@ -244,9 +244,9 @@ const getFractalModuleMasterCopyAddress = (chain: Chain) => {
 const getMultiSendCallOnlyAddress = (chain: Chain) => {
   const multiSendCallOnlyAddress =
     chain === mainnet
-      ? "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D"
+      ? getAddress("0x40A2aCCbd92BCA938b02010E17A5b8929b49130D")
       : chain === sepolia
-      ? "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B"
+      ? getAddress("0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B")
       : undefined;
   if (multiSendCallOnlyAddress === undefined) {
     console.error("Multi Send Call Only address can't be set!");
@@ -259,9 +259,9 @@ const getMultiSendCallOnlyAddress = (chain: Chain) => {
 const getCompatibilityFallbackHandlerAddress = (chain: Chain) => {
   const compatibilityFallbackHandlerAddress =
     chain === mainnet
-      ? "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4"
+      ? getAddress("0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4")
       : chain === sepolia
-      ? "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804"
+      ? getAddress("0x017062a1dE2FE6b99BE3d9d37841FeD19F573804")
       : undefined;
   if (compatibilityFallbackHandlerAddress === undefined) {
     console.error("Compatibility Fallback Handler address can't be set!");
@@ -269,6 +269,58 @@ const getCompatibilityFallbackHandlerAddress = (chain: Chain) => {
   }
 
   return compatibilityFallbackHandlerAddress;
+};
+
+const getOwners = () => {
+  const ownersRaw = process.env.MULTISIG_OWNERS;
+
+  if (ownersRaw === undefined) {
+    console.error("MULTISIG_OWNERS environment variable is missing!");
+    process.exit(1);
+  }
+
+  let owners;
+
+  try {
+    owners = ownersRaw
+      .split(",")
+      .map((owner) => owner.trim())
+      .map((owner) => getAddress(owner));
+  } catch {
+    console.error(
+      "MULTISIG_OWNERS environment variable has an invalid address in it!"
+    );
+    process.exit(1);
+  }
+
+  if (owners.length === 0) {
+    console.error(
+      "MULTISIG_OWNERS environment variable is malformed, no addresses present!"
+    );
+    process.exit(1);
+  }
+
+  return owners;
+};
+
+const getThreshold = (owners: Address[]) => {
+  const thresholdRaw = process.env.MULTISIG_THRESHOLD;
+
+  if (thresholdRaw === undefined) {
+    console.error("MULTISIG_THRESHOLD environment variable is missing!");
+    process.exit(1);
+  }
+
+  const threshold = BigInt(thresholdRaw);
+
+  if (threshold > BigInt(owners.length)) {
+    console.error(
+      "MULTISIG_THRESHOLD cannot be greater than the number of MULTISIG_OWNERS!"
+    );
+    process.exit(1);
+  }
+
+  return threshold;
 };
 
 export const getConfig = () => {
@@ -291,12 +343,18 @@ export const getConfig = () => {
   const multiSendCallOnlyAddress = getMultiSendCallOnlyAddress(chain);
   const compatibilityFallbackHandlerAddress =
     getCompatibilityFallbackHandlerAddress(chain);
+  const owners = getOwners();
+  const threshold = getThreshold(owners);
 
   return {
     dryRun,
     network: {
       chain,
       signingKey,
+    },
+    multisig: {
+      owners,
+      threshold,
     },
     contractAddresses: {
       user: {

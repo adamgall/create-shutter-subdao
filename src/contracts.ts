@@ -12,6 +12,8 @@ import {
   AzoriusAbi,
   EnsNameWrapperAbi,
   LinearERC20VotingStrategyAbi,
+  GnosisSafeProxyFactoryAbi,
+  MultiSendCallOnlyAbi,
 } from "./abis";
 
 export const safeContract = (
@@ -66,5 +68,27 @@ export const linearVotingContract = (
     address,
     abi: LinearERC20VotingStrategyAbi,
     client,
+  });
+};
+
+export const gnosisSafeProxyFactoryContract = (
+  address: Address,
+  client: PublicClient<HttpTransport, Chain>
+) => {
+  return getContract({
+    address: address,
+    abi: GnosisSafeProxyFactoryAbi,
+    client: client,
+  });
+};
+
+export const multiSendCallOnlyContract = (
+  address: Address,
+  client: PublicClient<HttpTransport, Chain>
+) => {
+  return getContract({
+    address: address,
+    abi: MultiSendCallOnlyAbi,
+    client: client,
   });
 };
