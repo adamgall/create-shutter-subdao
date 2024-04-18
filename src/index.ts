@@ -17,6 +17,7 @@ import {
   createMultiSendTransaction,
   createRemoveOwnerTransaction,
   createSafeExecTransaction,
+  createTransferTokensTransactions,
   createUpdateDaoNameTransaction,
   generateSaltNonce,
   getFractalModuleInitializer,
@@ -214,7 +215,7 @@ const rl = readline.createInterface({
   );
 
   console.log(
-    `Deploy new Safe call, for use in outer MultiSend:\n${JSON.stringify(
+    `Deploy new Safe call, for use in first MultiSend:\n${JSON.stringify(
       deploySafeTransaction,
       null,
       "\t"
@@ -230,7 +231,7 @@ const rl = readline.createInterface({
   );
 
   console.log(
-    `Deploy Fractal Module call, for use in outer MultiSend:\n${JSON.stringify(
+    `Deploy Fractal Module call, for use in first MultiSend:\n${JSON.stringify(
       deployFractalModuleTransaction,
       null,
       "\t"
@@ -245,7 +246,7 @@ const rl = readline.createInterface({
   );
 
   console.log(
-    `Safe execTransaction call, for use in outer MultiSend:\n${JSON.stringify(
+    `Safe execTransaction call, for use in first MultiSend:\n${JSON.stringify(
       safeExecTransaction,
       null,
       "\t"
@@ -253,14 +254,15 @@ const rl = readline.createInterface({
   );
   console.log("");
 
-  const multiSendTransaction = createMultiSendTransaction(
+  const firstMultiSendTransaction = createMultiSendTransaction(
     config.contractAddresses.safe.multiSendCallOnlyAddress,
+    false,
     [deploySafeTransaction, deployFractalModuleTransaction, safeExecTransaction]
   );
 
   console.log(
-    `Outer MultiSend transaction:\n${JSON.stringify(
-      multiSendTransaction,
+    `First MultiSend transaction:\n${JSON.stringify(
+      firstMultiSendTransaction,
       null,
       "\t"
     )}`
@@ -281,10 +283,44 @@ const rl = readline.createInterface({
   );
   console.log("");
 
+  const transferTokensTransactions = createTransferTokensTransactions(
+    config.parentSafe.fundingTokens,
+    predictedSafeAddress
+  );
+
+  console.log(
+    `Transfer tokens transactions in second MultiSend:\n${JSON.stringify(
+      transferTokensTransactions,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const secondMultiSendTransaction = createMultiSendTransaction(
+    config.contractAddresses.safe.multiSendCallOnlyAddress,
+    true,
+    transferTokensTransactions
+  );
+
+  console.log(
+    `Second MultiSend transaction:\n${JSON.stringify(
+      secondMultiSendTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
   const submitProposalArgs = [
     linearVotingStrategy.address,
     "0x",
-    [ensTransaction, multiSendTransaction, declareSubDaoTransaction],
+    [
+      ensTransaction,
+      firstMultiSendTransaction,
+      declareSubDaoTransaction,
+      secondMultiSendTransaction,
+    ],
     `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
   ] as const;
 
@@ -298,7 +334,16 @@ const rl = readline.createInterface({
   console.log("");
 
   if (config.dryRun === true) {
-    console.log("This is a DRY RUN, not making any transactions.");
+    const simulation = await azoriusModule.simulate.submitProposal(
+      submitProposalArgs
+    );
+    console.log(
+      `This is a DRY RUN, not making any transactions. Simulating, instead:\n${JSON.stringify(
+        simulation,
+        null,
+        "\t"
+      )}`
+    );
     process.exit(0);
   }
 
@@ -318,7 +363,7 @@ const rl = readline.createInterface({
 
   console.log("Submitting transaction...");
 
-  const proposalHash = await azoriusModuleWriteable.simulate.submitProposal(
+  const proposalHash = await azoriusModuleWriteable.write.submitProposal(
     submitProposalArgs
   );
 

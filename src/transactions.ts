@@ -9,6 +9,7 @@ import {
   encodeAbiParameters,
   encodeFunctionData,
   encodePacked,
+  erc20Abi,
   getContractAddress,
   hexToBigInt,
   keccak256,
@@ -238,6 +239,7 @@ export const multiSendFunctionData = (
 
 export const createMultiSendTransaction = (
   multiSendCallOnlyAddress: Address,
+  delegateCall: boolean,
   multiSendTransactions: {
     operation: number;
     to: Address;
@@ -247,7 +249,7 @@ export const createMultiSendTransaction = (
 ) => {
   return {
     to: multiSendCallOnlyAddress,
-    operation: 0,
+    operation: delegateCall ? 1 : 0,
     value: 0n,
     data: multiSendFunctionData(multiSendTransactions),
   };
@@ -285,10 +287,6 @@ export const createSafeExecTransaction = (
 
 export const createEnableModuleTransaction = (
   safeAddress: Address,
-  // moduleMasterCopyAddress: Address,
-  // moduleProxyFactoryAddress: Address,
-  // moduleInitializerData: Hex,
-  // saltNonce: bigint,
   predictedModuleAddress: Address
 ) => {
   return {
@@ -335,4 +333,20 @@ export const createUpdateDaoNameTransaction = (
       args: [daoName],
     }),
   };
+};
+
+export const createTransferTokensTransactions = (
+  tokens: { address: Address; amount: bigint }[],
+  recipient: Address
+) => {
+  return tokens.map((token) => ({
+    operation: 0,
+    to: token.address,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: erc20Abi,
+      functionName: "transfer",
+      args: [recipient, token.amount],
+    }),
+  }));
 };
