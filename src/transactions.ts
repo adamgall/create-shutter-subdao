@@ -82,7 +82,7 @@ export const salt = (initializer: Hex, saltNonce: bigint) => {
   );
 };
 
-export const encodeMultiSend = (
+const encodeMultiSend = (
   txs: { to: Address; value: bigint; data: Hex; operation: number }[]
 ): Hex => {
   return `0x${txs

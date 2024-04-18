@@ -13,7 +13,6 @@ import {
   EnsNameWrapperAbi,
   LinearERC20VotingStrategyAbi,
   GnosisSafeProxyFactoryAbi,
-  MultiSendCallOnlyAbi,
 } from "./abis";
 
 export const safeContract = (
@@ -78,17 +77,6 @@ export const gnosisSafeProxyFactoryContract = (
   return getContract({
     address: address,
     abi: GnosisSafeProxyFactoryAbi,
-    client: client,
-  });
-};
-
-export const multiSendCallOnlyContract = (
-  address: Address,
-  client: PublicClient<HttpTransport, Chain>
-) => {
-  return getContract({
-    address: address,
-    abi: MultiSendCallOnlyAbi,
     client: client,
   });
 };
