@@ -271,6 +271,21 @@ const getCompatibilityFallbackHandlerAddress = (chain: Chain) => {
   return compatibilityFallbackHandlerAddress;
 };
 
+const getFractalRegistryAddress = (chain: Chain) => {
+  const fractalRegistryAddress =
+    chain === mainnet
+      ? getAddress("0x023BDAEFeDDDdd5B43aF125CAA8007a99A886Fd3")
+      : chain === sepolia
+      ? getAddress("0x4791FF2a6E84F012402c0679C12Cb1d9260450A6")
+      : undefined;
+  if (fractalRegistryAddress === undefined) {
+    console.error("Fractal Registry address can't be set!");
+    process.exit(1);
+  }
+
+  return fractalRegistryAddress;
+};
+
 const getOwners = () => {
   const ownersRaw = process.env.MULTISIG_OWNERS;
 
@@ -323,6 +338,17 @@ const getThreshold = (owners: Address[]) => {
   return threshold;
 };
 
+const getChildSafeName = () => {
+  const childSafeName = process.env.CHILD_SAFE_NAME;
+
+  if (childSafeName === undefined) {
+    console.error("CHILD_SAFE_NAME environment variable is missing!");
+    process.exit(1);
+  }
+
+  return childSafeName;
+};
+
 export const getConfig = () => {
   const dryRun = getDryRun();
   const signingKey = getSigningKey();
@@ -343,8 +369,10 @@ export const getConfig = () => {
   const multiSendCallOnlyAddress = getMultiSendCallOnlyAddress(chain);
   const compatibilityFallbackHandlerAddress =
     getCompatibilityFallbackHandlerAddress(chain);
-  const owners = getOwners();
-  const threshold = getThreshold(owners);
+  const fractalRegistryAddress = getFractalRegistryAddress(chain);
+  const multisigOwners = getOwners();
+  const multisigThreshold = getThreshold(multisigOwners);
+  const childSafeName = getChildSafeName();
 
   return {
     dryRun,
@@ -353,8 +381,11 @@ export const getConfig = () => {
       signingKey,
     },
     multisig: {
-      owners,
-      threshold,
+      multisigOwners,
+      multisigThreshold,
+    },
+    childSafe: {
+      childSafeName,
     },
     contractAddresses: {
       user: {
@@ -366,6 +397,7 @@ export const getConfig = () => {
       },
       fractal: {
         fractalModuleMasterCopyAddress,
+        fractalRegistryAddress,
       },
       safe: {
         multiSendCallOnlyAddress,

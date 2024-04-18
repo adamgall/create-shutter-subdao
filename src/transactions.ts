@@ -20,12 +20,14 @@ import {
 } from "viem";
 import {
   FractalModuleAbi,
+  FractalRegistryAbi,
   GnosisSafeL2Abi,
   GnosisSafeProxyFactoryAbi,
   ModuleProxyFactoryAbi,
   MultiSendCallOnlyAbi,
 } from "./abis";
 import { randomBytes } from "crypto";
+
 export const createEnsTransaction = (
   ensPublicResolverAddress: Address,
   ensName: string,
@@ -54,6 +56,22 @@ export const createEnsTransaction = (
   };
 };
 
+export const createDeclareSubDaoTransaction = (
+  fractalRegistryAddress: Address,
+  subDaoAddress: Address
+) => {
+  return {
+    operation: 0,
+    to: fractalRegistryAddress,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: FractalRegistryAbi,
+      functionName: "declareSubDAO",
+      args: [subDaoAddress],
+    }),
+  };
+};
+
 export const generateSaltNonce = () => {
   return bytesToBigInt(randomBytes(32));
 };
@@ -64,7 +82,7 @@ export const salt = (initializer: Hex, saltNonce: bigint) => {
   );
 };
 
-const encodeMultiSend = (
+export const encodeMultiSend = (
   txs: { to: Address; value: bigint; data: Hex; operation: number }[]
 ): Hex => {
   return `0x${txs
@@ -84,22 +102,22 @@ const encodeMultiSend = (
 };
 
 export const getGnosisSafeInitializer = (
+  multisigOwners: Address[],
   multiSendCallOnlyAddress: Address,
-  compatibilityFallbackHandlerAddress: Address,
-  owners: Address[]
+  compatibilityFallbackHandlerAddress: Address
 ) => {
   return encodeFunctionData({
     abi: GnosisSafeL2Abi,
     functionName: "setup",
     args: [
-      [...owners, multiSendCallOnlyAddress], // _owners
+      [...multisigOwners, multiSendCallOnlyAddress], // _owners
       1n, // _threshold // hardcode to 1
       zeroAddress, // to
       zeroHash, // data
       compatibilityFallbackHandlerAddress, // fallbackHandler
-      "0x0000000000000000000000000000000000000000", // paymentToken
+      zeroAddress, // paymentToken
       0n, // payment
-      "0x0000000000000000000000000000000000000000", // paymentReceiver
+      zeroAddress, // paymentReceiver
     ],
   });
 };
@@ -195,7 +213,9 @@ export const createCleanupTransaction = (
   fractalModuleInitializer: Hex,
   saltNonce: bigint,
   owners: Address[],
-  threshold: bigint
+  threshold: bigint,
+  childSafeName: string,
+  fractalRegistryAddress: Address
 ) => {
   return {
     operation: 0,
@@ -243,6 +263,16 @@ export const createCleanupTransaction = (
                     multiSendCallOnlyAddress,
                     threshold,
                   ],
+                }),
+              },
+              {
+                operation: 0,
+                to: fractalRegistryAddress,
+                value: 0n,
+                data: encodeFunctionData({
+                  abi: FractalRegistryAbi,
+                  functionName: "updateDAOName",
+                  args: [childSafeName],
                 }),
               },
             ]),

@@ -10,6 +10,7 @@ import { ensOwner } from "./ens";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 import {
   createCleanupTransaction,
+  createDeclareSubDaoTransaction,
   createDeployFractalModuleTransaction,
   createDeploySafeTransaction,
   createEnsTransaction,
@@ -96,9 +97,9 @@ import {
   console.log("");
 
   const gnosisSafeInitializer = getGnosisSafeInitializer(
+    config.multisig.multisigOwners,
     config.contractAddresses.safe.multiSendCallOnlyAddress,
-    config.contractAddresses.safe.compatibilityFallbackHandlerAddress,
-    []
+    config.contractAddresses.safe.compatibilityFallbackHandlerAddress
   );
 
   const saltNonce = generateSaltNonce();
@@ -126,6 +127,7 @@ import {
     config.network.signingKey,
     config.network.chain
   );
+
   const azoriusModuleWriteable = azoriusContractWriteable(
     azoriusModule.address,
     walletClient
@@ -161,8 +163,14 @@ import {
         config.contractAddresses.safe.moduleProxyFactoryAddress,
         fractalModuleInitializer,
         saltNonce,
-        config.multisig.owners,
-        config.multisig.threshold
+        config.multisig.multisigOwners,
+        config.multisig.multisigThreshold,
+        config.childSafe.childSafeName,
+        config.contractAddresses.fractal.fractalRegistryAddress
+      ),
+      createDeclareSubDaoTransaction(
+        config.contractAddresses.fractal.fractalRegistryAddress,
+        predictedSafeAddress
       ),
     ],
     `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
