@@ -333,8 +333,13 @@ const rl = readline.createInterface({
   );
   console.log("");
 
+  const azoriusModuleWriteable = azoriusContractWriteable(
+    azoriusModule.address,
+    getWalletClient(config.network.signingKey, config.network.chain)
+  );
+
   if (config.dryRun === true) {
-    const simulation = await azoriusModule.simulate.submitProposal(
+    const simulation = await azoriusModuleWriteable.simulate.submitProposal(
       submitProposalArgs
     );
     console.log(
@@ -355,11 +360,6 @@ const rl = readline.createInterface({
     process.exit(0);
   }
   console.log("");
-
-  const azoriusModuleWriteable = azoriusContractWriteable(
-    azoriusModule.address,
-    getWalletClient(config.network.signingKey, config.network.chain)
-  );
 
   console.log("Submitting transaction...");
 
