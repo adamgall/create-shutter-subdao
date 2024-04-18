@@ -386,6 +386,77 @@ export const getConfig = () => {
     childSafeMultisigOwners
   );
 
+  console.log("User provided environment variables:");
+  console.table([
+    { property: "DRY RUN", value: dryRun },
+    { property: "Chain", value: chain.name },
+    {
+      property: "Parent Safe address",
+      value: parentSafeAddress,
+    },
+    { property: "ENS name", value: ensName },
+    { property: "ENS IPFS hash", value: ensIpfsHash },
+    { property: "Proposal title", value: proposalTitle },
+    {
+      property: "Proposal description",
+      value: `${proposalDescription.substring(0, 50)}...`,
+    },
+    {
+      property: "Proposal documentation URL",
+      value: proposalDocumentationUrl,
+    },
+    ...childSafeMultisigOwners.map((owner, i) => ({
+      property: `Child Safe multisig owner #${i + 1}`,
+      value: owner,
+    })),
+    {
+      property: "Child Safe multisig threshold",
+      value: Number(childSafeMultisigThreshold),
+    },
+  ]);
+  console.log("");
+
+  console.log("Network specific contract addresses:");
+  console.table([
+    {
+      property: "ENS Name Wrapper address",
+      value: ensNameWrapperAddress,
+    },
+    {
+      property: "ENS Public Resolver address",
+      value: ensPublicResolverAddress,
+    },
+    {
+      property: "FractalModule Master Copy address",
+      value: fractalModuleMasterCopyAddress,
+    },
+    {
+      property: "FractalRegistry address",
+      value: fractalRegistryAddress,
+    },
+    {
+      property: "MultiSendCallOnly address",
+      value: multiSendCallOnlyAddress,
+    },
+    {
+      property: "ModuleProxyFactory address",
+      value: moduleProxyFactoryAddress,
+    },
+    {
+      property: "GnosisSafeL2 Singleton address",
+      value: gnosisSafeL2SingletonAddress,
+    },
+    {
+      property: "GnosisSafeProxyFactory address",
+      value: gnosisSafeProxyFactoryAddress,
+    },
+    {
+      property: "CompatibilityFallbackHandler address",
+      value: compatibilityFallbackHandlerAddress,
+    },
+  ]);
+  console.log("");
+
   return {
     dryRun,
     network: {

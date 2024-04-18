@@ -40,35 +40,6 @@ const rl = readline.createInterface({
   };
 
   const config = getConfig();
-  console.table([
-    { property: "DRY RUN", value: config.dryRun },
-    { property: "Chain", value: config.network.chain.name },
-    {
-      property: "Parent Safe address",
-      value: config.contractAddresses.user.parentSafeAddress,
-    },
-    { property: "ENS name", value: config.ensData.ensName },
-    { property: "ENS IPFS hash", value: config.ensData.ensIpfsHash },
-    { property: "Proposal title", value: config.proposalData.proposalTitle },
-    {
-      property: "Proposal description",
-      value: `${config.proposalData.proposalDescription.substring(0, 50)}...`,
-    },
-    {
-      property: "Proposal documentation URL",
-      value: config.proposalData.proposalDocumentationUrl,
-    },
-    ...config.childSafe.childSafeMultisigOwners.map((owner, i) => ({
-      property: `Child Safe multisig owner #${i + 1}`,
-      value: owner,
-    })),
-    {
-      property: "Child Safe multisig threshold",
-      value: Number(config.childSafe.childSafeMultisigThreshold),
-    },
-  ]);
-  console.log("");
-
   const publicClient = getPublicClient(config.network.chain);
 
   const parentSafe = safeContract(
