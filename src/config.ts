@@ -356,7 +356,14 @@ const getChildSafeMultisigThreshold = (owners: Address[]) => {
     process.exit(1);
   }
 
-  const threshold = BigInt(thresholdRaw);
+  let threshold;
+
+  try {
+    threshold = BigInt(thresholdRaw);
+  } catch {
+    console.error("CHILD_SAFE_MULTISIG_THRESHOLD is not a valid integer!");
+    process.exit(1);
+  }
 
   if (threshold > BigInt(owners.length)) {
     console.error(
