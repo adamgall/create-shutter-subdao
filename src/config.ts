@@ -7,6 +7,7 @@ import {
   getAddress,
   isHex,
   namehash,
+  parseEther,
 } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import { confirmTokenOwnership, formatTokens } from "./funding";
@@ -312,6 +313,51 @@ const getFractalRegistryAddress = (chain: Chain) => {
   return fractalRegistryAddress;
 };
 
+const getRealityModuleMasterCopyAddress = (chain: Chain) => {
+  const realityModuleMasterCopyAddress =
+    chain === mainnet
+      ? getAddress("0x4e35DA39Fa5893a70A40Ce964F993d891E607cC0")
+      : chain === sepolia
+      ? getAddress("0x4e35DA39Fa5893a70A40Ce964F993d891E607cC0")
+      : undefined;
+  if (realityModuleMasterCopyAddress === undefined) {
+    console.error("RealityModule Master Copy address can't be set!");
+    process.exit(1);
+  }
+
+  return realityModuleMasterCopyAddress;
+};
+
+const getRealityOracleAddress = (chain: Chain) => {
+  const realityOracleAddress =
+    chain === mainnet
+      ? getAddress("0x5b7dD1E86623548AF054A4985F7fc8Ccbb554E2c")
+      : chain === sepolia
+      ? getAddress("0xaf33DcB6E8c5c4D9dDF579f53031b514d19449CA")
+      : undefined;
+  if (realityOracleAddress === undefined) {
+    console.error("Reality Oracle address can't be set!");
+    process.exit(1);
+  }
+
+  return realityOracleAddress;
+};
+
+const getRealityArbitratorAddress = (chain: Chain) => {
+  const realityArbitratorAddress =
+    chain === mainnet
+      ? getAddress("0xf72cfd1b34a91a64f9a98537fe63fbab7530adca")
+      : chain === sepolia
+      ? getAddress("0x05b942faecfb3924970e3a28e0f230910cedff45")
+      : undefined;
+  if (realityArbitratorAddress === undefined) {
+    console.error("Reality Arbitrator address can't be set!");
+    process.exit(1);
+  }
+
+  return realityArbitratorAddress;
+};
+
 const getChildSafeMultisigOwners = () => {
   const ownersRaw = process.env.CHILD_SAFE_MULTISIG_OWNERS;
 
@@ -453,6 +499,116 @@ const getFundingTokens = async (
   return fundingTokens;
 };
 
+const getRealityTemplateId = () => {
+  const realityTemplateIdRaw = process.env.REALITY_TEMPLATE_ID;
+
+  if (realityTemplateIdRaw === undefined) {
+    console.error("REALITY_TEMPLATE_ID environment variable is missing!");
+    process.exit(1);
+  }
+
+  let realityTemplateId;
+
+  try {
+    realityTemplateId = BigInt(realityTemplateIdRaw);
+  } catch {
+    console.error(
+      "REALITY_TEMPLATE_ID environment variable is not a valid number!"
+    );
+    process.exit(1);
+  }
+
+  return realityTemplateId;
+};
+
+const getRealityMinimumBond = () => {
+  const realityMinimumBondRaw = process.env.REALITY_MINIMUM_BOND;
+
+  if (realityMinimumBondRaw === undefined) {
+    console.error("REALITY_MINIMUM_BOND environment variable is missing!");
+    process.exit(1);
+  }
+
+  let realityMinimumBond;
+
+  try {
+    realityMinimumBond = parseEther(realityMinimumBondRaw);
+  } catch {
+    console.error(
+      "REALITY_MINIMUM_BOND environment variable is not a valid number!"
+    );
+    process.exit(1);
+  }
+
+  return realityMinimumBond;
+};
+
+const getRealityQuestionTimeout = () => {
+  const realityQuestionTimeoutRaw = process.env.REALITY_QUESTION_TIMEOUT;
+
+  if (realityQuestionTimeoutRaw === undefined) {
+    console.error("REALITY_QUESTION_TIMEOUT environment variable is missing!");
+    process.exit(1);
+  }
+
+  let realityQuestionTimeout;
+
+  try {
+    realityQuestionTimeout = parseInt(realityQuestionTimeoutRaw);
+  } catch {
+    console.error(
+      "REALITY_QUESTION_TIMEOUT environment variable is not a valid number!"
+    );
+    process.exit(1);
+  }
+
+  return realityQuestionTimeout;
+};
+
+const getRealityQuestionCooldown = () => {
+  const realityQuestionCooldownRaw = process.env.REALITY_QUESTION_COOLDOWN;
+
+  if (realityQuestionCooldownRaw === undefined) {
+    console.error("REALITY_QUESTION_COOLDOWN environment variable is missing!");
+    process.exit(1);
+  }
+
+  let realityQuestionCooldown;
+
+  try {
+    realityQuestionCooldown = parseInt(realityQuestionCooldownRaw);
+  } catch {
+    console.error(
+      "REALITY_QUESTION_COOLDOWN environment variable is not a valid number!"
+    );
+    process.exit(1);
+  }
+
+  return realityQuestionCooldown;
+};
+
+const getRealityAnswerExpiration = () => {
+  const realityAnswerExpirationRaw = process.env.REALITY_ANSWER_EXPIRATION;
+
+  if (realityAnswerExpirationRaw === undefined) {
+    console.error("REALITY_ANSWER_EXPIRATION environment variable is missing!");
+    process.exit(1);
+  }
+
+  let realityAnswerExpiration;
+
+  try {
+    realityAnswerExpiration = parseInt(realityAnswerExpirationRaw);
+  } catch {
+    console.error(
+      "REALITY_ANSWER_EXPIRATION environment variable is not a valid number!"
+    );
+    process.exit(1);
+  }
+
+  return realityAnswerExpiration;
+};
+
 export const getConfig = async () => {
   const dryRun = getDryRun();
 
@@ -477,6 +633,10 @@ export const getConfig = async () => {
   const compatibilityFallbackHandlerAddress =
     getCompatibilityFallbackHandlerAddress(chain);
   const fractalRegistryAddress = getFractalRegistryAddress(chain);
+  const realityModuleMasterCopyAddress =
+    getRealityModuleMasterCopyAddress(chain);
+  const realityOracleAddress = getRealityOracleAddress(chain);
+  const realityArbitratorAddress = getRealityArbitratorAddress(chain);
 
   const ensName = await getEnsName(
     publicClient,
@@ -492,6 +652,12 @@ export const getConfig = async () => {
   );
 
   const fundingTokens = await getFundingTokens(publicClient, parentSafeAddress);
+
+  const realityTemplateId = getRealityTemplateId();
+  const realityMinimumBond = getRealityMinimumBond();
+  const realityQuestionTimeout = getRealityQuestionTimeout();
+  const realityQuestionCooldown = getRealityQuestionCooldown();
+  const realityAnswerExpiration = getRealityAnswerExpiration();
 
   console.log("User provided environment variables:");
   console.table([
@@ -512,13 +678,17 @@ export const getConfig = async () => {
       property: "Proposal documentation URL",
       value: proposalDocumentationUrl,
     },
+    {
+      property: "Child Safe name",
+      value: childSafeName,
+    },
     ...childSafeMultisigOwners.map((owner, i) => ({
       property: `Child Safe multisig owner #${i + 1}`,
       value: owner,
     })),
     {
       property: "Child Safe multisig threshold",
-      value: Number(childSafeMultisigThreshold),
+      value: childSafeMultisigThreshold.toString(),
     },
     ...fundingTokens.map((token, i) => ({
       property: `Funding address #${i + 1}`,
@@ -528,10 +698,30 @@ export const getConfig = async () => {
       property: `Funding amount (full units) #${i + 1}`,
       value: token.amount.toString(),
     })),
+    {
+      property: "Reality template ID",
+      value: realityTemplateId.toString(),
+    },
+    {
+      property: "Reality minimum bond (full units)",
+      value: realityMinimumBond.toString(),
+    },
+    {
+      property: "Reality question timeout (seconds)",
+      value: realityQuestionCooldown,
+    },
+    {
+      property: "Reality question cooldown (seconds)",
+      value: realityQuestionCooldown,
+    },
+    {
+      property: "Reality answer expiration (seconds)",
+      value: realityAnswerExpiration,
+    },
   ]);
   console.log("");
 
-  console.log("Network specific contract addresses:");
+  console.log(`Network specific (${chain.name}) contract addresses:`);
   console.table([
     {
       property: "ENS Name Wrapper address",
@@ -569,6 +759,18 @@ export const getConfig = async () => {
       property: "CompatibilityFallbackHandler address",
       value: compatibilityFallbackHandlerAddress,
     },
+    {
+      property: "RealityModule Master Copy address",
+      value: realityModuleMasterCopyAddress,
+    },
+    {
+      property: "Reality Oracle address",
+      value: realityOracleAddress,
+    },
+    {
+      property: "Reality DAO Arbitrator address",
+      value: realityArbitratorAddress,
+    },
   ]);
   console.log("");
 
@@ -605,6 +807,7 @@ export const getConfig = async () => {
       zodiac: {
         moduleProxyFactoryAddress,
         fractalModuleMasterCopyAddress,
+        realityModuleMasterCopyAddress,
       },
     },
     ensData: {
@@ -615,6 +818,15 @@ export const getConfig = async () => {
       proposalTitle,
       proposalDescription,
       proposalDocumentationUrl,
+    },
+    realityData: {
+      realityOracle: realityOracleAddress,
+      realityTemplateId: realityTemplateId,
+      realityMinimumBond: realityMinimumBond,
+      realityQuestionTimeout: realityQuestionTimeout,
+      realityQuestionCooldown: realityQuestionCooldown,
+      realityQuestionArbitrator: realityArbitratorAddress,
+      realityAnswerExpiration: realityAnswerExpiration,
     },
   };
 };

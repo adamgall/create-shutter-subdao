@@ -23,6 +23,7 @@ import {
   ModuleProxyFactoryAbi,
   MultiSendCallOnlyAbi,
   PublicResolverAbi,
+  RealityModuleETHAbi,
 } from "./abis";
 import { randomBytes } from "crypto";
 
@@ -130,6 +131,44 @@ export const getFractalModuleInitializer = (
           moduleAvatar, // address _avatar
           moduleAvatar, // address _target
           [], // address[] _controllers
+        ]
+      ),
+    ],
+  });
+};
+
+export const getRealityModuleInitializer = (
+  moduleOwner: Address,
+  moduleAvatar: Address,
+  reality: {
+    realityOracle: Address;
+    realityTemplateId: bigint;
+    realityMinimumBond: bigint;
+    realityQuestionTimeout: number;
+    realityQuestionCooldown: number;
+    realityQuestionArbitrator: Address;
+    realityAnswerExpiration: number;
+  }
+) => {
+  return encodeFunctionData({
+    abi: RealityModuleETHAbi,
+    functionName: "setUp",
+    args: [
+      encodeAbiParameters(
+        parseAbiParameters(
+          "address, address, address, address, uint32, uint32, uint32, uint256, uint256, address"
+        ),
+        [
+          moduleOwner, // address _owner
+          moduleAvatar, // address _avatar
+          moduleAvatar, // address _target
+          reality.realityOracle, // RealitioV3 _oracle
+          reality.realityQuestionTimeout, // uint32 timeout
+          reality.realityQuestionCooldown, // uint32 cooldown
+          reality.realityAnswerExpiration, // uint32 expiration
+          reality.realityMinimumBond, // uint256 bond
+          reality.realityTemplateId, // uint256 templateId
+          reality.realityQuestionArbitrator, // address arbitrator
         ]
       ),
     ],

@@ -24,6 +24,7 @@ import {
   getGnosisSafeInitializer,
   getPredictedModuleAddress,
   getPredictedSafeAddress,
+  getRealityModuleInitializer,
   multiSendFunctionData,
   salt,
 } from "./transactions";
@@ -126,15 +127,35 @@ const rl = readline.createInterface({
     saltNonce
   );
 
+  const realityModuleInitializer = getRealityModuleInitializer(
+    config.parentSafe.parentSafeAddress,
+    predictedSafeAddress,
+    config.realityData
+  );
+
+  const predictedRealityModuleAddress = getPredictedModuleAddress(
+    config.contractAddresses.zodiac.realityModuleMasterCopyAddress,
+    config.contractAddresses.zodiac.moduleProxyFactoryAddress,
+    realityModuleInitializer,
+    saltNonce
+  );
+
   console.log(`Child Safe initialization bytecode: ${gnosisSafeInitializer}`);
   console.log("");
   console.log(
     `Fractal Module initilization bytecode: ${fractalModuleInitializer}`
   );
   console.log("");
+  console.log(
+    `Reality Module initilization bytecode: ${realityModuleInitializer}`
+  );
+  console.log("");
   console.log(`Predicted Child Safe address: ${predictedSafeAddress}`);
   console.log(
     `Predicted Fractal Module address: ${predictedFractalModuleAddress}`
+  );
+  console.log(
+    `Predicted Reality Module address: ${predictedRealityModuleAddress}`
   );
   console.log("");
 
@@ -157,6 +178,20 @@ const rl = readline.createInterface({
   console.log(
     `Enable Fractal module call, for use in nested MultiSend:\n${JSON.stringify(
       enableFractalModuleTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
+  const enableRealityModuleTransaction = createEnableModuleTransaction(
+    predictedSafeAddress,
+    predictedRealityModuleAddress
+  );
+
+  console.log(
+    `Enable Reality module call, for use in nested MultiSend:\n${JSON.stringify(
+      enableRealityModuleTransaction,
       null,
       "\t"
     )}`
@@ -195,6 +230,7 @@ const rl = readline.createInterface({
 
   const multiSendFunctionDataBytes = multiSendFunctionData([
     enableFractalModuleTransaction,
+    enableRealityModuleTransaction,
     removeOwnerTransaction,
     updateDaoNameTransaction,
   ]);
@@ -240,6 +276,22 @@ const rl = readline.createInterface({
   );
   console.log("");
 
+  const deployRealityModuleTransaction = createDeployModuleTransaction(
+    config.contractAddresses.zodiac.moduleProxyFactoryAddress,
+    config.contractAddresses.zodiac.realityModuleMasterCopyAddress,
+    realityModuleInitializer,
+    saltNonce
+  );
+
+  console.log(
+    `Deploy Reality Module call, for use in first MultiSend:\n${JSON.stringify(
+      deployRealityModuleTransaction,
+      null,
+      "\t"
+    )}`
+  );
+  console.log("");
+
   const safeExecTransaction = createSafeExecTransaction(
     predictedSafeAddress,
     config.contractAddresses.safe.multiSendCallOnlyAddress,
@@ -258,7 +310,12 @@ const rl = readline.createInterface({
   const firstMultiSendTransaction = createMultiSendTransaction(
     config.contractAddresses.safe.multiSendCallOnlyAddress,
     false,
-    [deploySafeTransaction, deployFractalModuleTransaction, safeExecTransaction]
+    [
+      deploySafeTransaction,
+      deployFractalModuleTransaction,
+      deployRealityModuleTransaction,
+      safeExecTransaction,
+    ]
   );
 
   console.log(
