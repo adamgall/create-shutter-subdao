@@ -1,10 +1,6 @@
 import {
   Address,
-  Chain,
-  GetContractReturnType,
   Hex,
-  HttpTransport,
-  PublicClient,
   bytesToBigInt,
   encodeAbiParameters,
   encodeFunctionData,
@@ -140,23 +136,18 @@ export const getFractalModuleInitializer = (
   });
 };
 
-export const getPredictedSafeAddress = async (
-  gnosisSafeProxyFactoryContract: GetContractReturnType<
-    typeof GnosisSafeProxyFactoryAbi,
-    PublicClient<HttpTransport, Chain>
-  >,
+export const getPredictedSafeAddress = (
+  gnosisSafeProxyCreationCode: Hex,
+  gnosisSafeProxyFactoryContractAddress: Address,
   gnosisSafeL2SingletonAddress: Address,
   salt: Hex
 ) => {
   return getContractAddress({
     bytecode: encodePacked(
       ["bytes", "uint256"],
-      [
-        await gnosisSafeProxyFactoryContract.read.proxyCreationCode(),
-        hexToBigInt(gnosisSafeL2SingletonAddress),
-      ]
+      [gnosisSafeProxyCreationCode, hexToBigInt(gnosisSafeL2SingletonAddress)]
     ),
-    from: gnosisSafeProxyFactoryContract.address,
+    from: gnosisSafeProxyFactoryContractAddress,
     opcode: "CREATE2",
     salt: salt,
   });

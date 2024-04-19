@@ -104,11 +104,12 @@ const rl = readline.createInterface({
     config.contractAddresses.safe.compatibilityFallbackHandlerAddress
   );
 
-  const predictedSafeAddress = await getPredictedSafeAddress(
-    gnosisSafeProxyFactoryContract(
+  const predictedSafeAddress = getPredictedSafeAddress(
+    await gnosisSafeProxyFactoryContract(
       config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
-      publicClient
-    ),
+      config.publicClient
+    ).read.proxyCreationCode(),
+    config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
     config.contractAddresses.safe.gnosisSafeL2SingletonAddress,
     salt(gnosisSafeInitializer, saltNonce)
   );
