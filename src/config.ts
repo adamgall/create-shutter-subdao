@@ -587,15 +587,17 @@ export const getConfig = async () => {
         ensPublicResolverAddress,
       },
       fractal: {
-        fractalModuleMasterCopyAddress,
         fractalRegistryAddress,
       },
       safe: {
         multiSendCallOnlyAddress,
-        moduleProxyFactoryAddress,
         gnosisSafeL2SingletonAddress,
         gnosisSafeProxyFactoryAddress,
         compatibilityFallbackHandlerAddress,
+      },
+      zodiac: {
+        moduleProxyFactoryAddress,
+        fractalModuleMasterCopyAddress,
       },
     },
     ensData: {

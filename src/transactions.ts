@@ -166,7 +166,7 @@ export const getPredictedSafeAddress = async (
   });
 };
 
-export const getPredictedFractalModuleAddress = (
+export const getPredictedModuleAddress = (
   moduleMasterCopyAddress: Address,
   moduleProxyFactoryAddress: Address,
   moduleInitializerData: Hex,
@@ -200,10 +200,10 @@ export const createDeploySafeTransaction = (
   };
 };
 
-export const createDeployFractalModuleTransaction = (
+export const createDeployModuleTransaction = (
   moduleProxyFactoryAddress: Address,
-  fractalModuleMasterCopyAddress: Address,
-  fractalModuleInitializer: Hex,
+  moduleMasterCopyAddress: Address,
+  moduleInitializer: Hex,
   saltNonce: bigint
 ) => {
   return {
@@ -213,11 +213,7 @@ export const createDeployFractalModuleTransaction = (
     data: encodeFunctionData({
       abi: ModuleProxyFactoryAbi,
       functionName: "deployModule",
-      args: [
-        fractalModuleMasterCopyAddress,
-        fractalModuleInitializer,
-        saltNonce,
-      ],
+      args: [moduleMasterCopyAddress, moduleInitializer, saltNonce],
     }),
   };
 };

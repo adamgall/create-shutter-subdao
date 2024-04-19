@@ -10,7 +10,7 @@ import { getWalletClient } from "./clients";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 import {
   createDeclareSubDaoTransaction,
-  createDeployFractalModuleTransaction,
+  createDeployModuleTransaction,
   createDeploySafeTransaction,
   createEnableModuleTransaction,
   createEnsTransaction,
@@ -22,7 +22,7 @@ import {
   generateSaltNonce,
   getFractalModuleInitializer,
   getGnosisSafeInitializer,
-  getPredictedFractalModuleAddress,
+  getPredictedModuleAddress,
   getPredictedSafeAddress,
   multiSendFunctionData,
   salt,
@@ -118,9 +118,9 @@ const rl = readline.createInterface({
     predictedSafeAddress
   );
 
-  const predictedFractalModuleAddress = getPredictedFractalModuleAddress(
-    config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
-    config.contractAddresses.safe.moduleProxyFactoryAddress,
+  const predictedFractalModuleAddress = getPredictedModuleAddress(
+    config.contractAddresses.zodiac.fractalModuleMasterCopyAddress,
+    config.contractAddresses.zodiac.moduleProxyFactoryAddress,
     fractalModuleInitializer,
     saltNonce
   );
@@ -223,9 +223,9 @@ const rl = readline.createInterface({
   );
   console.log("");
 
-  const deployFractalModuleTransaction = createDeployFractalModuleTransaction(
-    config.contractAddresses.safe.moduleProxyFactoryAddress,
-    config.contractAddresses.fractal.fractalModuleMasterCopyAddress,
+  const deployFractalModuleTransaction = createDeployModuleTransaction(
+    config.contractAddresses.zodiac.moduleProxyFactoryAddress,
+    config.contractAddresses.zodiac.fractalModuleMasterCopyAddress,
     fractalModuleInitializer,
     saltNonce
   );
