@@ -240,9 +240,9 @@ const getGnosisSafeL2SingletonAddress = (chain: Chain) => {
 const getModuleProxyFactoryAddress = (chain: Chain) => {
   const moduleProxyFactoryAddress =
     chain === mainnet
-      ? getAddress("0x31Bf73048056fe947B827C0Fe159ACcB5Ae30237")
+      ? getAddress("0x000000000000aDdB49795b0f9bA5BC298cDda236")
       : chain === sepolia
-      ? getAddress("0xe93e4b198097c4cb3a6de594c90031cdac0b88f3")
+      ? getAddress("0x000000000000aDdB49795b0f9bA5BC298cDda236")
       : undefined;
   if (moduleProxyFactoryAddress === undefined) {
     console.error("Module Proxy Factory address can't be set!");
