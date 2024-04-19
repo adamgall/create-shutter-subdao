@@ -149,14 +149,14 @@ const rl = readline.createInterface({
   );
   console.log("");
 
-  const enableModuleTransaction = createEnableModuleTransaction(
+  const enableFractalModuleTransaction = createEnableModuleTransaction(
     predictedSafeAddress,
     predictedFractalModuleAddress
   );
 
   console.log(
     `Enable Fractal module call, for use in nested MultiSend:\n${JSON.stringify(
-      enableModuleTransaction,
+      enableFractalModuleTransaction,
       null,
       "\t"
     )}`
@@ -194,7 +194,7 @@ const rl = readline.createInterface({
   console.log("");
 
   const multiSendFunctionDataBytes = multiSendFunctionData([
-    enableModuleTransaction,
+    enableFractalModuleTransaction,
     removeOwnerTransaction,
     updateDaoNameTransaction,
   ]);
