@@ -26,6 +26,7 @@ import {
   GnosisSafeProxyFactoryAbi,
   ModuleProxyFactoryAbi,
   MultiSendCallOnlyAbi,
+  PublicResolverAbi,
 } from "./abis";
 import { randomBytes } from "crypto";
 
@@ -39,19 +40,8 @@ export const createEnsTransaction = (
     to: ensPublicResolverAddress,
     value: 0n,
     data: encodeFunctionData({
-      abi: [
-        {
-          inputs: [
-            { name: "node", type: "bytes32" },
-            { name: "key", type: "string" },
-            { name: "value", type: "string" },
-          ],
-          name: "setText",
-          outputs: [],
-          stateMutability: "public",
-          type: "function",
-        },
-      ],
+      abi: PublicResolverAbi,
+      functionName: "setText",
       args: [namehash(ensName), "daorequirements", `ipfs://${ensIPFSHash}`],
     }),
   };
