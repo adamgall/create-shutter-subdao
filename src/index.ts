@@ -5,7 +5,6 @@ import {
   safeContract,
 } from "./contracts";
 import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
-import { getConfig } from "./config";
 import { getWalletClient } from "./clients";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 import {
@@ -28,6 +27,7 @@ import {
   multiSendFunctionData,
   salt,
 } from "./transactions";
+import { getValidatedConfig } from "./configValidation";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -40,7 +40,7 @@ const rl = readline.createInterface({
     return this.toString();
   };
 
-  const config = await getConfig();
+  const config = await getValidatedConfig();
   const publicClient = config.publicClient;
 
   const parentSafe = safeContract(
