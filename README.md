@@ -6,7 +6,9 @@ This codebase implements a script which crafts and submits a custom proposal to 
 
 1. Use correct Node version: `nvm use`
 2. Install packages: `npm install`
-3. Set up config: `cp .env.example .env` (then edit appropriately)
+3. Set up config: `cp .env.example .env`
+   1. Edit your `.env` appropriately
+   2. Create a file for the proposal's description (markdown supported) at `src/proposal-assets/proposal-description.md` (or wherever you specify in the `.env`'s `PROPOSAL_DESCRIPTION_FILE` parameter)
 
 ## Usage
 
