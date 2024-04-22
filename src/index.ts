@@ -396,22 +396,21 @@ const rl = readline.createInterface({
     getWalletClient(config.network.signingKey, config.network.chain)
   );
 
+  const simulation = await azoriusModuleWriteable.simulate.submitProposal(
+    submitProposalArgs
+  );
+  console.log(
+    `Transaction simulation:\n${JSON.stringify(simulation, null, "\t")}`
+  );
+  console.log("");
+
   if (config.dryRun === true) {
-    const simulation = await azoriusModuleWriteable.simulate.submitProposal(
-      submitProposalArgs
-    );
-    console.log(
-      `This is a DRY RUN, not making any transactions. Simulating, instead:\n${JSON.stringify(
-        simulation,
-        null,
-        "\t"
-      )}`
-    );
+    console.log("This is a DRY RUN, not making any transactions.");
     process.exit(0);
   }
 
   const answer = await rl.question(
-    "If the above looks correct, type 'continue' to submit the transaction. Otherwise, enter anything else to quit.\n"
+    "If the above data and transaction simulation looks correct, type 'continue' to submit the transaction. Otherwise, enter anything else to quit.\n"
   );
 
   if (answer !== "continue") {
