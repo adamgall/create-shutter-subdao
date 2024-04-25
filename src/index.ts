@@ -128,7 +128,7 @@ const rl = readline.createInterface({
   );
 
   const realityModuleInitializer = getRealityModuleInitializer(
-    config.parentSafe.parentSafeAddress,
+    predictedChildSafeAddress,
     predictedChildSafeAddress,
     config.realityData
   );
