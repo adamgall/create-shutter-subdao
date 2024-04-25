@@ -105,7 +105,7 @@ const rl = readline.createInterface({
     config.contractAddresses.safe.compatibilityFallbackHandlerAddress
   );
 
-  const predictedSafeAddress = getPredictedSafeAddress(
+  const predictedChildSafeAddress = getPredictedSafeAddress(
     await gnosisSafeProxyFactoryContract(
       config.contractAddresses.safe.gnosisSafeProxyFactoryAddress,
       config.publicClient
@@ -117,7 +117,7 @@ const rl = readline.createInterface({
 
   const fractalModuleInitializer = getFractalModuleInitializer(
     config.parentSafe.parentSafeAddress,
-    predictedSafeAddress
+    predictedChildSafeAddress
   );
 
   const predictedFractalModuleAddress = getPredictedModuleAddress(
@@ -129,7 +129,7 @@ const rl = readline.createInterface({
 
   const realityModuleInitializer = getRealityModuleInitializer(
     config.parentSafe.parentSafeAddress,
-    predictedSafeAddress,
+    predictedChildSafeAddress,
     config.realityData
   );
 
@@ -150,7 +150,7 @@ const rl = readline.createInterface({
     `Reality Module initilization bytecode: ${realityModuleInitializer}`
   );
   console.log("");
-  console.log(`Predicted Child Safe address: ${predictedSafeAddress}`);
+  console.log(`Predicted Child Safe address: ${predictedChildSafeAddress}`);
   console.log(
     `Predicted Fractal Module address: ${predictedFractalModuleAddress}`
   );
@@ -171,7 +171,7 @@ const rl = readline.createInterface({
   console.log("");
 
   const enableFractalModuleTransaction = createEnableModuleTransaction(
-    predictedSafeAddress,
+    predictedChildSafeAddress,
     predictedFractalModuleAddress
   );
 
@@ -185,7 +185,7 @@ const rl = readline.createInterface({
   console.log("");
 
   const enableRealityModuleTransaction = createEnableModuleTransaction(
-    predictedSafeAddress,
+    predictedChildSafeAddress,
     predictedRealityModuleAddress
   );
 
@@ -199,7 +199,7 @@ const rl = readline.createInterface({
   console.log("");
 
   const removeOwnerTransaction = createRemoveOwnerTransaction(
-    predictedSafeAddress,
+    predictedChildSafeAddress,
     config.contractAddresses.safe.multiSendCallOnlyAddress,
     config.childSafe.childSafeMultisigOwners,
     config.childSafe.childSafeMultisigThreshold
@@ -293,7 +293,7 @@ const rl = readline.createInterface({
   console.log("");
 
   const safeExecTransaction = createSafeExecTransaction(
-    predictedSafeAddress,
+    predictedChildSafeAddress,
     config.contractAddresses.safe.multiSendCallOnlyAddress,
     multiSendFunctionDataBytes
   );
@@ -329,7 +329,7 @@ const rl = readline.createInterface({
 
   const declareSubDaoTransaction = createDeclareSubDaoTransaction(
     config.contractAddresses.fractal.fractalRegistryAddress,
-    predictedSafeAddress
+    predictedChildSafeAddress
   );
 
   console.log(
@@ -343,7 +343,7 @@ const rl = readline.createInterface({
 
   const transferTokensTransactions = createTransferTokensTransactions(
     config.parentSafe.fundingTokens,
-    predictedSafeAddress
+    predictedChildSafeAddress
   );
 
   console.log(
