@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Chain, getAddress, isHex, parseEther } from "viem";
+import { Chain, getAddress, parseEther } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 
 enum SingletonAddressNames {
@@ -162,35 +162,6 @@ const getStringsEnvVar = (name: string) => {
   return items;
 };
 
-const getBooleanEnvVar = (name: string) => {
-  const envVar = getEnvVar(name);
-
-  const value =
-    envVar === "true" ? true : envVar === "false" ? false : undefined;
-
-  if (value === undefined) {
-    console.error(
-      `${name} environment variable is malformed! Should be set to "true" or "false".`
-    );
-    process.exit(1);
-  }
-
-  return value;
-};
-
-const getHexEnvVar = (name: string) => {
-  const envVar = getEnvVar(name);
-
-  const value = envVar;
-
-  if (!isHex(value)) {
-    console.error(`${name} environment variable is malformed!`);
-    process.exit(1);
-  }
-
-  return value;
-};
-
 const getAddressEnvVar = (name: string) => {
   const envVar = getEnvVar(name);
 
@@ -280,8 +251,6 @@ const getEtherEnvVar = (name: string) => {
 export const getConfigRaw = () => {
   const chain = getChain("CHAIN");
 
-  const dryRun = getBooleanEnvVar("DRY_RUN");
-  const signingKey = getHexEnvVar("SIGNING_KEY");
   const parentSafeAddress = getAddressEnvVar("PARENT_SAFE_ADDRESS");
   const proposalTitle = getStringEnvVar("PROPOSAL_TITLE");
   const proposalDescriptionFile = getStringEnvVar("PROPOSAL_DESCRIPTION_FILE");
@@ -355,9 +324,7 @@ export const getConfigRaw = () => {
   );
 
   return {
-    dryRun,
     chain,
-    signingKey,
     parentSafeAddress,
     fundingTokensAddresses,
     fundingTokensAmounts,

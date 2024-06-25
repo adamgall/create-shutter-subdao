@@ -1,13 +1,4 @@
-import { Chain, Hex, createPublicClient, createWalletClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-
-export const getWalletClient = (signingKey: Hex, chain: Chain) => {
-  return createWalletClient({
-    account: privateKeyToAccount(signingKey),
-    chain,
-    transport: http(),
-  });
-};
+import { Chain, createPublicClient, http } from "viem";
 
 export const getPublicClient = (chain: Chain) => {
   return createPublicClient({

@@ -1,12 +1,4 @@
-import {
-  Address,
-  Chain,
-  HttpTransport,
-  PrivateKeyAccount,
-  PublicClient,
-  WalletClient,
-  getContract,
-} from "viem";
+import { Address, PublicClient, getContract } from "viem";
 import {
   GnosisSafeL2Abi,
   AzoriusAbi,
@@ -24,17 +16,6 @@ export const safeContract = (address: Address, client: PublicClient) => {
 };
 
 export const azoriusContract = (address: Address, client: PublicClient) => {
-  return getContract({
-    address,
-    abi: AzoriusAbi,
-    client,
-  });
-};
-
-export const azoriusContractWriteable = (
-  address: Address,
-  client: WalletClient<HttpTransport, Chain, PrivateKeyAccount>
-) => {
   return getContract({
     address,
     abi: AzoriusAbi,

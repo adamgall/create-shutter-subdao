@@ -1,11 +1,5 @@
-import * as readline from "readline/promises";
-import {
-  azoriusContractWriteable,
-  gnosisSafeProxyFactoryContract,
-  safeContract,
-} from "./contracts";
+import { gnosisSafeProxyFactoryContract, safeContract } from "./contracts";
 import { findAzoriusModule, getAllModulesOnSafe } from "./modules";
-import { getWalletClient } from "./clients";
 import { findVotingStrategy, getAllStrategiesOnAzorius } from "./strategies";
 import {
   createDeclareSubDaoTransaction,
@@ -28,11 +22,6 @@ import {
   salt,
 } from "./transactions";
 import { getValidatedConfig } from "./configValidation";
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 
 (async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -382,48 +371,6 @@ const rl = readline.createInterface({
     `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
   ] as const;
 
-  console.log(
-    `Full proposal transaction arguments:\n${JSON.stringify(
-      submitProposalArgs,
-      null,
-      "\t"
-    )}`
-  );
-  console.log("");
-
-  const azoriusModuleWriteable = azoriusContractWriteable(
-    azoriusModule.address,
-    getWalletClient(config.network.signingKey, config.network.chain)
-  );
-
-  const simulation = await azoriusModuleWriteable.simulate.submitProposal(
-    submitProposalArgs
-  );
-  console.log(
-    `Transaction simulation:\n${JSON.stringify(simulation, null, "\t")}`
-  );
-  console.log("");
-
-  if (config.dryRun === true) {
-    console.log("This is a DRY RUN, not making any transactions.");
-    process.exit(0);
-  }
-
-  const answer = await rl.question(
-    "If the above data and transaction simulation looks correct, type 'continue' to submit the transaction. Otherwise, enter anything else to quit.\n"
-  );
-
-  if (answer !== "continue") {
-    process.exit(0);
-  }
-  console.log("");
-
-  console.log("Submitting transaction...");
-
-  const proposalHash = await azoriusModuleWriteable.write.submitProposal(
-    submitProposalArgs
-  );
-
-  console.log(`Proposal created at transaction ${proposalHash}`);
-  process.exit(0);
+  console.log("proposal args:");
+  console.log(submitProposalArgs);
 })();

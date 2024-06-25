@@ -110,10 +110,8 @@ export const getValidatedConfig = async () => {
 
   const config = {
     publicClient,
-    dryRun: configRaw.dryRun,
     network: {
       chain: configRaw.chain,
-      signingKey: configRaw.signingKey,
     },
     parentSafe: {
       parentSafeAddress: configRaw.parentSafeAddress,
@@ -169,7 +167,6 @@ export const getValidatedConfig = async () => {
 
   console.log("User provided environment variables:");
   console.table([
-    { property: "DRY RUN", value: config.dryRun },
     { property: "Chain", value: config.network.chain.name },
     {
       property: "Parent Safe address",
