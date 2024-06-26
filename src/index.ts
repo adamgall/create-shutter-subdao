@@ -371,6 +371,6 @@ import { getValidatedConfig } from "./configValidation";
     `{"title":"${config.proposalData.proposalTitle}","description":${config.proposalData.proposalDescription},"documentationUrl":"${config.proposalData.proposalDocumentationUrl}"}`,
   ] as const;
 
-  console.log("proposal args:");
+  console.log("!!! PROPOSAL ARGUMENTS !!!");
   console.log(submitProposalArgs);
 })();

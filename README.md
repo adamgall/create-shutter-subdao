@@ -1,6 +1,6 @@
 # Custom Fractal Proposal
 
-This codebase implements a script which crafts and submits a custom proposal to a Fractal Safe.
+This codebase implements a script which crafts and submits a custom proposal to a Decent Safe.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Run the script with `npx ts-node src`
 
 ## Intention
 
-This script will create and post a proposal to a Fractal Safe. The proposal includes a few transactions which do the following things:
+This script will create the data necessary to submit a new proposal to a Decent Safe. The proposal data includes a few transactions which do the following things:
 
 - Adds a text record to the parent Safe's ENS name, with a key of `daorequirements` and a value of `ipfs://[hash]`.
 - Deploys and configures a new instance of the `FractalModule`, which enables parent Safes to clawback funds from child Safes.
@@ -32,13 +32,29 @@ This script will create and post a proposal to a Fractal Safe. The proposal incl
 
 First and foremost, study the `.env.example` and make sure you understand what each variable is for.
 
-Then, create a Fractal Safe on Sepolia and prepare it for testing:
+Then, create a Decent Safe on Sepolia and prepare it for testing:
 
 - It needs "ERC20 Token Voting" governance.
 - You should make sure to delegate your voting tokens to yourself, so you can vote on the submitted proposal.
-- Transfer a "Name wrapped" ENS record to this testing Fractal Safe.
+- Transfer a "Name wrapped" ENS record to this testing Decent Safe.
   - The proposal will be setting a text record on this ENS name.
-- Transfer some ERC20 assets to the testing Fractal Safe.
+- Transfer some ERC20 assets to the testing Decent Safe.
   - The proposal will be transferring some of these assets to the new child Safe.
 
 Finally, create an `.env` file, copy the contents from `.env.example` into it, and adjust all of the variables appropriately as per how you set up your testing Fractal Safe.
+
+## Shutter DAO 0x36
+
+This script was ran, and the resulting proposal data was submitted to Shutter DAO 0x36:
+https://app.decentdao.org/proposals/21?dao=eth:0x36bD3044ab68f600f6d3e081056F34f2a58432c4
+
+The transaction which created this proposal:
+https://etherscan.io/tx/0xd2830cb930c555114fccb4ce1d4811476acc910e4c0528d23137d11d2d8ef184
+
+To run this script again and receive the same output as the data in the proposal transaction, run:
+
+```sh
+npm run repeat:shutter
+```
+
+Compare the results (everything after `!!! PROPOSAL ARGUMENTS !!!`) with the decoded input data in the transaction on Etherscan, they should match.
