@@ -109,6 +109,7 @@ export const getValidatedConfig = async () => {
   );
 
   const config = {
+    nonce: configRaw.nonce,
     publicClient,
     network: {
       chain: configRaw.chain,

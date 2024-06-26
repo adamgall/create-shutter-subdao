@@ -81,7 +81,7 @@ import { getValidatedConfig } from "./configValidation";
   );
   console.log("");
 
-  const saltNonce = generateSaltNonce();
+  const saltNonce = config.nonce || generateSaltNonce();
 
   console.log(
     `Using salt nonce ${saltNonce} for all create2 contract generation and address prediction.`

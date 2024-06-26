@@ -203,6 +203,16 @@ const getAddressesEnvVar = (name: string) => {
   return items;
 };
 
+const getOptionalBigIntEnvVar = (name: string) => {
+  const envVar = process.env[name];
+
+  if (envVar === undefined) {
+    return undefined;
+  }
+
+  return getBigIntEnvVar(name);
+};
+
 const getBigIntEnvVar = (name: string) => {
   const envVar = getEnvVar(name);
 
@@ -249,6 +259,7 @@ const getEtherEnvVar = (name: string) => {
 };
 
 export const getConfigRaw = () => {
+  const nonce = getOptionalBigIntEnvVar("NONCE");
   const chain = getChain("CHAIN");
 
   const parentSafeAddress = getAddressEnvVar("PARENT_SAFE_ADDRESS");
@@ -324,6 +335,7 @@ export const getConfigRaw = () => {
   );
 
   return {
+    nonce,
     chain,
     parentSafeAddress,
     fundingTokensAddresses,
